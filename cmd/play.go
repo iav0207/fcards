@@ -84,7 +84,7 @@ func argsOrAllTsvPaths(args []string) []string {
 }
 
 func allTsvPaths() []string {
-    pattern := fmt.Sprintf("%s/.fcards/tsv/*.tsv", os.Getenv("HOME"))
+    pattern := os.Getenv("HOME") + "/.fcards/tsv/*.tsv"
     paths, err := fp.Glob(pattern)
     if err != nil {
         panic(err)
