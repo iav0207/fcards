@@ -5,8 +5,10 @@ import (
 	"time"
 	"math/rand"
 	"errors"
+    "os"
+    fp "path/filepath"
 	"github.com/spf13/cobra"
-    "github.com/iav0207/fcards/internal"
+    . "github.com/iav0207/fcards/internal"
 )
 
 // playCmd represents the play command
@@ -46,10 +48,11 @@ func (flag *Direction) Type() string {
 var directionFlag Direction
 
 func run(cmd *cobra.Command, args []string) {
-    cards := make([]internal.Card, 0)
-    for _, filePath := range args {
+    cards := make([]Card, 0)
+    paths := argsOrAllTsvPaths(args)
+    for _, filePath := range paths {
         fmt.Printf("Reading cards from file %s\n", filePath)
-        cards = append(cards, internal.ReadCards(filePath)...)
+        cards = append(cards, ReadCards(filePath)...)
     }
     fmt.Printf("Read %d cards in total.\n", len(cards))
     fmt.Println("Let's play!")
@@ -61,8 +64,24 @@ func run(cmd *cobra.Command, args []string) {
             card.Invert()
         }
         fmt.Printf("%s:\t", card.Question)
-        checkAnswer(internal.ReadLine(), card.Answer)
+        checkAnswer(ReadLine(), card.Answer)
     }
+}
+
+func argsOrAllTsvPaths(args []string) []string {
+    if len(args) > 0 {
+        return args
+    }
+    return allTsvPaths()
+}
+
+func allTsvPaths() []string {
+    pattern := fmt.Sprintf("%s/.fcards/tsv/*.tsv", os.Getenv("HOME"))
+    paths, err := fp.Glob(pattern)
+    if err != nil {
+        panic(err)
+    }
+    return paths
 }
 
 func shouldInvert(direc Direction) bool {
@@ -73,13 +92,13 @@ func randomBool() bool {
     return rand.Intn(2) == 0
 }
 
-func shuffle(cards []internal.Card) {
+func shuffle(cards []Card) {
     rand.Seed(time.Now().UnixNano())
     rand.Shuffle(len(cards), func (i, j int) { cards[i], cards[j] = cards[j], cards[i] })
 }
 
 func checkAnswer(actual, expected string) {
-    difference := internal.LevenshteinDistance(actual, expected)
+    difference := LevenshteinDistance(actual, expected)
     switch difference {
     case 0:
         fmt.Println("✅")

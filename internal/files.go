@@ -2,7 +2,7 @@ package internal
 
 import (
     "os"
-    "strings"
+    s "strings"
 )
 
 func check(e error) {
@@ -17,7 +17,7 @@ func ReadCards(filePath string) []Card {
         if len(line) == 0 {
             continue
         }
-        splitLine := strings.Split(line, "\t")
+        splitLine := s.Split(line, "\t")
         if len(splitLine) < 2 {
             panic("Expected every non-empty line to be a tab-separated pair: question and answer")
         }
@@ -27,7 +27,7 @@ func ReadCards(filePath string) []Card {
 }
 
 func ReadLines(filePath string) []string {
-    return strings.Split(ReadText(filePath), "\n")
+    return s.Split(ReadText(filePath), "\n")
 }
 
 func ReadText(filePath string) string {
