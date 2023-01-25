@@ -7,18 +7,19 @@ project_url=github.com/iav0207/fcards
 src_installation_path=$$GOPATH/src/$(project_url)
 bin_installation_path=$$GOPATH/bin
 
-build_and_play: build play
-
-play:
-	$(bin_path) play $(card_files)
-
-install:
+install: fmt
 	mkdir -p $(tsv_folder)
 	go install
 	fcards --help
 
-build:
+play:
+	fcards play --direc random $(card_files)
+
+build: fmt
 	go build -o $(bin_path)
+
+fmt:
+	go fmt
 
 publish:
 ifndef v

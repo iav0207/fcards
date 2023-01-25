@@ -2,8 +2,9 @@ package cmd
 
 import (
 	"fmt"
-    "time"
-    "math/rand"
+	"time"
+	"math/rand"
+	"errors"
 	"github.com/spf13/cobra"
     "github.com/iav0207/fcards/internal"
 )
@@ -16,8 +17,35 @@ var playCmd = &cobra.Command{
 	Run: run,
 }
 
+type Direction string
+const (
+    Straight    Direction = "straight"
+    Inverse     Direction = "inverse"
+    Random      Direction = "random"
+)
+var directionValues []Direction = []Direction{Straight, Inverse, Random}
+
+func (flag *Direction) String() string {
+    return string(*flag)
+}
+
+func (flag *Direction) Set(value string) error {
+    switch Direction(value) {
+    case Straight, Inverse, Random:
+        *flag = Direction(value)
+        return nil
+    default:
+        return errors.New(fmt.Sprintf("direction flag value must be one of: %v", directionValues))
+    }
+}
+
+func (flag *Direction) Type() string {
+    return "Direction"
+}
+
+var directionFlag Direction
+
 func run(cmd *cobra.Command, args []string) {
-    // TODO if args is empty, traverse all tsv files in ~/.fcards
     cards := make([]internal.Card, 0)
     for _, filePath := range args {
         fmt.Printf("Reading cards from file %s\n", filePath)
@@ -29,10 +57,20 @@ func run(cmd *cobra.Command, args []string) {
     shuffle(cards)
 
     for _, card := range cards[:20] {
+        if shouldInvert(directionFlag) {
+            card.Invert()
+        }
         fmt.Printf("%s:\t", card.Question)
         checkAnswer(internal.ReadLine(), card.Answer)
-        // TODO offer to update the card?
     }
+}
+
+func shouldInvert(direc Direction) bool {
+    return direc == Inverse || (direc == Random && randomBool())
+}
+
+func randomBool() bool {
+    return rand.Intn(2) == 0
 }
 
 func shuffle(cards []internal.Card) {
@@ -51,5 +89,6 @@ func checkAnswer(actual, expected string) {
 
 func init() {
 	rootCmd.AddCommand(playCmd)
-    // TODO a flag to randomly invert some cards
+    directionHelpMsg := fmt.Sprintf("Cards direction. One of: %v", directionValues)
+    playCmd.Flags().Var(&directionFlag, "direc", directionHelpMsg)
 }

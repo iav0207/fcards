@@ -16,6 +16,8 @@ To start playing with cards from a specific set of files, pass the files as argu
 fcards play file1.tsv file2.tsv mydecks/*
 ```
 
+To learn more about `play` command consult `fcards play --help`.
+
 ## Input format
 
 A file represents a deck of flashcards, one per non-empty line.
