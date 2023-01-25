@@ -17,6 +17,7 @@ var playCmd = &cobra.Command{
 }
 
 func run(cmd *cobra.Command, args []string) {
+    // TODO if args is empty, traverse all tsv files in ~/.fcards
     cards := make([]internal.Card, 0)
     for _, filePath := range args {
         fmt.Printf("Reading cards from file %s\n", filePath)
@@ -30,6 +31,7 @@ func run(cmd *cobra.Command, args []string) {
     for _, card := range cards[:20] {
         fmt.Printf("%s:\t", card.Question)
         checkAnswer(internal.ReadLine(), card.Answer)
+        // TODO offer to update the card?
     }
 }
 
@@ -49,4 +51,5 @@ func checkAnswer(actual, expected string) {
 
 func init() {
 	rootCmd.AddCommand(playCmd)
+    // TODO a flag to randomly invert some cards
 }
