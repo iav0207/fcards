@@ -79,10 +79,13 @@ func shuffle(cards []internal.Card) {
 }
 
 func checkAnswer(actual, expected string) {
-    correct := internal.Compare(actual, expected) == 0
-    if correct {
+    difference := internal.LevenshteinDistance(actual, expected)
+    switch difference {
+    case 0:
         fmt.Println("✅")
-    } else {
+    case 1, 2:
+        fmt.Printf("🌼 Almost! %s\n", expected)
+    default:
         fmt.Printf("🍅 Expected: %s\n", expected)
     }
 }
