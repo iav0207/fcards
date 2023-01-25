@@ -19,6 +19,12 @@ var playCmd = &cobra.Command{
 	Run: run,
 }
 
+func init() {
+	rootCmd.AddCommand(playCmd)
+    directionHelpMsg := fmt.Sprintf("Cards direction. One of: %v", directionValues)
+    playCmd.Flags().Var(&directionFlag, "direc", directionHelpMsg)
+}
+
 type Direction string
 const (
     Straight    Direction = "straight"
@@ -48,24 +54,26 @@ func (flag *Direction) Type() string {
 var directionFlag Direction
 
 func run(cmd *cobra.Command, args []string) {
+    cards := readCards(args)
+    fmt.Printf("Read %d cards in total.\n", len(cards))
+    fmt.Println("Let's play!")
+
+    shuffle(cards)
+    sample := cards[:20]
+    applyDirectionFlag(sample)
+
+    reiterate := playRound(sample)
+    playRound(reiterate)
+}
+
+func readCards(args []string) []Card {
     cards := make([]Card, 0)
     paths := argsOrAllTsvPaths(args)
     for _, filePath := range paths {
         fmt.Printf("Reading cards from file %s\n", filePath)
         cards = append(cards, ReadCards(filePath)...)
     }
-    fmt.Printf("Read %d cards in total.\n", len(cards))
-    fmt.Println("Let's play!")
-
-    shuffle(cards)
-
-    for _, card := range cards[:20] {
-        if shouldInvert(directionFlag) {
-            card.Invert()
-        }
-        fmt.Printf("%s:\t", card.Question)
-        checkAnswer(ReadLine(), card.Answer)
-    }
+    return cards
 }
 
 func argsOrAllTsvPaths(args []string) []string {
@@ -84,8 +92,19 @@ func allTsvPaths() []string {
     return paths
 }
 
-func shouldInvert(direc Direction) bool {
-    return direc == Inverse || (direc == Random && randomBool())
+// Plays a round with given cards and returns those which were given wrong answers to.
+func playRound(cards []Card) []Card {
+    wrongAnswered := make([]Card, 0)
+
+    for _, card := range cards {
+        fmt.Printf("%s:\t", card.Question)
+        diff := checkAnswer(ReadLine(), card.Answer)
+        if diff > 0 {
+            wrongAnswered = append(wrongAnswered, card)
+        }
+    }
+
+    return wrongAnswered
 }
 
 func randomBool() bool {
@@ -97,7 +116,19 @@ func shuffle(cards []Card) {
     rand.Shuffle(len(cards), func (i, j int) { cards[i], cards[j] = cards[j], cards[i] })
 }
 
-func checkAnswer(actual, expected string) {
+func applyDirectionFlag(cards []Card) {
+    for i := 0; i < len(cards); i++ {
+        if shouldInvert(directionFlag) {
+            cards[i].Invert()
+        }
+    }
+}
+
+func shouldInvert(direc Direction) bool {
+    return direc == Inverse || (direc == Random && randomBool())
+}
+
+func checkAnswer(actual, expected string) int {
     difference := LevenshteinDistance(actual, expected)
     switch difference {
     case 0:
@@ -107,10 +138,6 @@ func checkAnswer(actual, expected string) {
     default:
         fmt.Printf("🍅 Expected: %s\n", expected)
     }
+    return difference
 }
 
-func init() {
-	rootCmd.AddCommand(playCmd)
-    directionHelpMsg := fmt.Sprintf("Cards direction. One of: %v", directionValues)
-    playCmd.Flags().Var(&directionFlag, "direc", directionHelpMsg)
-}
