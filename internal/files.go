@@ -1,18 +1,24 @@
 package internal
 
 import (
+	"fmt"
 	"os"
 	fp "path/filepath"
 	s "strings"
 )
 
-func check(e error) {
-	if e != nil {
-		panic(e)
+var Home = os.Getenv("HOME")
+
+func ReadCardsFromPaths(paths []string) []Card {
+	cards := make([]Card, 0)
+	for _, filePath := range paths {
+		fmt.Printf("Reading cards from file %s\n", filePath)
+		cards = append(cards, ReadCardsFromPath(filePath)...)
 	}
+	return cards
 }
 
-func ReadCards(filePath string) []Card {
+func ReadCardsFromPath(filePath string) []Card {
 	cards := make([]Card, 0)
 	for _, line := range ReadLines(filePath) {
 		if len(line) == 0 {
@@ -38,8 +44,17 @@ func ReadText(filePath string) string {
 }
 
 func AllTsvPaths() []string {
-	pattern := os.Getenv("HOME") + "/.fcards/tsv/*.tsv"
-	paths, err := fp.Glob(pattern)
+	return Glob(fmt.Sprintf("%s/.fcards/tsv/*.tsv", Home))
+}
+
+func Glob(glob string) []string {
+	paths, err := fp.Glob(glob)
 	check(err)
 	return paths
+}
+
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
 }

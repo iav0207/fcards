@@ -27,19 +27,12 @@ func init() {
 
 func run(cmd *cobra.Command, args []string) {
 	paths := argsOrAllTsvPaths(args)
-	cards := readCardsFrom(paths)
+	cards := ReadCardsFromPaths(paths)
 	fmt.Printf("Read %d cards in total. ", len(cards))
-	if len(cards) == 0 {
-		fmt.Println("Well, no game this time.")
-		os.Exit(0)
-	}
+	exitIfEmpty(cards)
 
-	shuffle(cards)
-	sample := cards[:min(len(cards), 20)]
+	sample := randomSampleOf(cards, 20)
 	applyDirectionFlag(sample)
-	if len(sample) != len(cards) {
-		fmt.Printf("Took a random sample of %d cards.\n", len(sample))
-	}
 
 	fmt.Println("Let's play!")
 	reiterate := playRound(sample)
@@ -53,13 +46,20 @@ func argsOrAllTsvPaths(args []string) []string {
 	return AllTsvPaths()
 }
 
-func readCardsFrom(paths []string) []Card {
-	cards := make([]Card, 0)
-	for _, filePath := range paths {
-		fmt.Printf("Reading cards from file %s\n", filePath)
-		cards = append(cards, ReadCards(filePath)...)
+func exitIfEmpty(cards []Card) {
+	if len(cards) == 0 {
+		fmt.Println("Well, no game this time.")
+		os.Exit(0)
 	}
-	return cards
+}
+
+func randomSampleOf(cards []Card, sizeLimit int) []Card {
+	shuffle(cards)
+	sample := cards[:min(len(cards), sizeLimit)]
+	if len(sample) != len(cards) {
+		fmt.Printf("Took a random sample of %d cards.\n", len(sample))
+	}
+	return sample
 }
 
 // Plays a round with given cards and returns those which were given wrong answers to.
