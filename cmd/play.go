@@ -6,7 +6,6 @@ import (
 	"math/rand"
 	"errors"
 	"os"
-	fp "path/filepath"
 	"github.com/spf13/cobra"
 	. "github.com/iav0207/fcards/internal"
 )
@@ -54,42 +53,40 @@ func (flag *Direction) Type() string {
 var directionFlag Direction
 
 func run(cmd *cobra.Command, args []string) {
-	cards := readCards(args)
-	fmt.Printf("Read %d cards in total.\n", len(cards))
-	fmt.Println("Let's play!")
+    paths := argsOrAllTsvPaths(args)
+	cards := readCardsFrom(paths)
+	fmt.Printf("Read %d cards in total. ", len(cards))
+	if len(cards) == 0 {
+		fmt.Println("Well, no game this time.")
+		os.Exit(0)
+	}
 
 	shuffle(cards)
-	sample := cards[:20]
+	sample := cards[:min(len(cards), 20)]
 	applyDirectionFlag(sample)
+	if len(sample) != len(cards) {
+		fmt.Printf("Took a random sample of %d cards.\n", len(sample))
+	}
 
+	fmt.Println("Let's play!")
 	reiterate := playRound(sample)
 	playRound(reiterate)
-}
-
-func readCards(args []string) []Card {
-	cards := make([]Card, 0)
-	paths := argsOrAllTsvPaths(args)
-	for _, filePath := range paths {
-		fmt.Printf("Reading cards from file %s\n", filePath)
-		cards = append(cards, ReadCards(filePath)...)
-	}
-	return cards
 }
 
 func argsOrAllTsvPaths(args []string) []string {
 	if len(args) > 0 {
 		return args
 	}
-	return allTsvPaths()
+	return AllTsvPaths()
 }
 
-func allTsvPaths() []string {
-	pattern := os.Getenv("HOME") + "/.fcards/tsv/*.tsv"
-	paths, err := fp.Glob(pattern)
-	if err != nil {
-		panic(err)
+func readCardsFrom(paths []string) []Card {
+	cards := make([]Card, 0)
+	for _, filePath := range paths {
+		fmt.Printf("Reading cards from file %s\n", filePath)
+		cards = append(cards, ReadCards(filePath)...)
 	}
-	return paths
+	return cards
 }
 
 // Plays a round with given cards and returns those which were given wrong answers to.
@@ -98,8 +95,9 @@ func playRound(cards []Card) []Card {
 
 	for _, card := range cards {
 		fmt.Printf("%s:\t", card.Question)
-		diff := checkAnswer(ReadLine(), card.Answer)
-		if diff > 0 {
+		missScore := LevenshteinDistance(ReadLine(), card.Answer)
+		printResponse(missScore, card.Answer)
+		if missScore > 0 {
 			wrongAnswered = append(wrongAnswered, card)
 		}
 	}
@@ -107,8 +105,15 @@ func playRound(cards []Card) []Card {
 	return wrongAnswered
 }
 
-func randomBool() bool {
-	return rand.Intn(2) == 0
+func printResponse(missScore int, expected string) {
+	switch missScore {
+	case 0:
+		fmt.Println("✅")
+	case 1, 2:
+		fmt.Printf("🌼 Almost! %s\n", expected)
+	default:
+		fmt.Printf("🍅 Expected: %s\n", expected)
+	}
 }
 
 func shuffle(cards []Card) {
@@ -128,16 +133,7 @@ func shouldInvert(direc Direction) bool {
 	return direc == Inverse || (direc == Random && randomBool())
 }
 
-func checkAnswer(actual, expected string) int {
-	difference := LevenshteinDistance(actual, expected)
-	switch difference {
-	case 0:
-		fmt.Println("✅")
-	case 1, 2:
-		fmt.Printf("🌼 Almost! %s\n", expected)
-	default:
-		fmt.Printf("🍅 Expected: %s\n", expected)
-	}
-	return difference
-}
+var randomBool = func () bool { return rand.Intn(2) == 0 }
+
+var min = func (a, b int) int { if a < b { return a }; return b }
 

@@ -3,6 +3,7 @@ package internal
 import (
 	"os"
 	s "strings"
+	fp "path/filepath"
 )
 
 func check(e error) {
@@ -35,4 +36,12 @@ func ReadText(filePath string) string {
 	check(err)
 	return string(data)
 }
+
+func AllTsvPaths() []string {
+	pattern := os.Getenv("HOME") + "/.fcards/tsv/*.tsv"
+	paths, err := fp.Glob(pattern)
+    check(err)
+	return paths
+}
+
 
