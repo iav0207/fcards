@@ -2,6 +2,7 @@ bin_name=fcards
 bin_path=bin/$(bin_name)
 content_folder=~/.fcards
 tsv_folder=$(content_folder)/tsv
+tsv_folder_backup=$(content_folder)/tsv.bak
 card_files=$(content_folder)/tsv/*
 project_url=github.com/iav0207/fcards
 src_installation_path=$$GOPATH/src/$(project_url)
@@ -29,4 +30,19 @@ endif
 	go test
 	git tag $v
 	git push origin $v
+
+locate_card:
+# find tsv files under `.fcards/tsv` folder that contain given substring
+ifndef q
+	$(error query argument `q` is undefined)
+endif
+	grep -RS "$q" $(tsv_folder) || echo not found
+
+use_cards_from: # this should be a command of the tool itself
+ifndef path
+	$(error path argument `path` is undefined)
+endif
+	rm -r $(tsv_folder_backup) || true
+	mv $(tsv_folder) $(tsv_folder_backup)
+	ln -sfF $(path) $(tsv_folder)
 

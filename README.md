@@ -2,6 +2,12 @@
 
 Command line local application that helps me practice languages using flashcards.
 
+Key features inlcude:
+
+- practice with a random sample taken from a given set of flashcards
+- practice cards in the default direction, or inverse (questions swapped with answers), or random, which is my favorite
+- at the end of a round reiterate over the cards that were given incorrect answers
+
 ## Installation
 
 Assuming you have Go installed and `$GOPATH` configured, you just need to run
@@ -52,6 +58,13 @@ If you're curious about or willing to use my collection of flashcards, you can f
 I link the collection to the TSV folder of `fcards` tool to always have the decks in sync, like this
 
 ```bash
+mv ~/.fcards/tsv ~/.fcards/tsv.bak
 ln -sfF "${path_to_decks_repo}/flashcards/tsv" ~/.fcards/tsv
+```
+
+You can use that or the script
+
+```bash
+make use_cards_from path="${path_you_want_to_use_for_decks}"
 ```
 
