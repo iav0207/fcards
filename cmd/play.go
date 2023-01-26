@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	. "github.com/iav0207/fcards/internal"
+	"github.com/iav0207/fcards/internal/flags"
 	"github.com/spf13/cobra"
 	"math/rand"
 	"os"
@@ -18,41 +18,12 @@ var playCmd = &cobra.Command{
 	Run:   run,
 }
 
+var direc flags.Direction = flags.Straight
+
 func init() {
 	rootCmd.AddCommand(playCmd)
-	directionHelpMsg := fmt.Sprintf("Cards direction. One of: %v", directionValues)
-	playCmd.Flags().Var(&directionFlag, "direc", directionHelpMsg)
+	playCmd.Flags().Var(&direc, direc.Name(), direc.HelpMsg())
 }
-
-type Direction string
-
-const (
-	Straight Direction = "straight"
-	Inverse  Direction = "inverse"
-	Random   Direction = "random"
-)
-
-var directionValues []Direction = []Direction{Straight, Inverse, Random}
-
-func (flag *Direction) String() string {
-	return string(*flag)
-}
-
-func (flag *Direction) Set(value string) error {
-	switch Direction(value) {
-	case Straight, Inverse, Random:
-		*flag = Direction(value)
-		return nil
-	default:
-		return errors.New(fmt.Sprintf("direction flag value must be one of: %v", directionValues))
-	}
-}
-
-func (flag *Direction) Type() string {
-	return "Direction"
-}
-
-var directionFlag Direction
 
 func run(cmd *cobra.Command, args []string) {
 	paths := argsOrAllTsvPaths(args)
@@ -125,19 +96,19 @@ func shuffle(cards []Card) {
 
 func applyDirectionFlag(cards []Card) {
 	for i := 0; i < len(cards); i++ {
-		if shouldInvert(directionFlag) {
+		if shouldInvert() {
 			cards[i].Invert()
 		}
 	}
 }
 
-func shouldInvert(direc Direction) bool {
-	return direc == Inverse || (direc == Random && randomBool())
+func shouldInvert() bool {
+	return direc == flags.Inverse || (direc == flags.Random && randomBool())
 }
 
 var randomBool = func() bool { return rand.Intn(2) == 0 }
 
-var min = func(a, b int) int {
+func min(a, b int) int {
 	if a < b {
 		return a
 	}
