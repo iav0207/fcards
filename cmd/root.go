@@ -1,17 +1,15 @@
 package cmd
 
 import (
-	"os"
 	"github.com/spf13/cobra"
+	"os"
 )
-
-
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "fcards",
 	Short: "Simple command-line flashcards",
-	Long: `Point it at a tab-separated file and play a quiz.`,
+	Long:  `Point it at a tab-separated file and play a quiz.`,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -34,5 +32,3 @@ func init() {
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
-
-

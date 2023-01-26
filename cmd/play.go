@@ -1,21 +1,21 @@
 package cmd
 
 import (
-	"fmt"
-	"time"
-	"math/rand"
 	"errors"
-	"os"
-	"github.com/spf13/cobra"
+	"fmt"
 	. "github.com/iav0207/fcards/internal"
+	"github.com/spf13/cobra"
+	"math/rand"
+	"os"
+	"time"
 )
 
 // playCmd represents the play command
 var playCmd = &cobra.Command{
 	Use:   "play",
 	Short: "Start a quiz",
-	Long: `Start a quiz. Usage: fcards play file1.tsv`,
-	Run: run,
+	Long:  `Start a quiz. Usage: fcards play file1.tsv`,
+	Run:   run,
 }
 
 func init() {
@@ -25,11 +25,13 @@ func init() {
 }
 
 type Direction string
+
 const (
-	Straight	Direction = "straight"
-	Inverse	 Direction = "inverse"
-	Random	  Direction = "random"
+	Straight Direction = "straight"
+	Inverse  Direction = "inverse"
+	Random   Direction = "random"
 )
+
 var directionValues []Direction = []Direction{Straight, Inverse, Random}
 
 func (flag *Direction) String() string {
@@ -53,7 +55,7 @@ func (flag *Direction) Type() string {
 var directionFlag Direction
 
 func run(cmd *cobra.Command, args []string) {
-    paths := argsOrAllTsvPaths(args)
+	paths := argsOrAllTsvPaths(args)
 	cards := readCardsFrom(paths)
 	fmt.Printf("Read %d cards in total. ", len(cards))
 	if len(cards) == 0 {
@@ -118,7 +120,7 @@ func printResponse(missScore int, expected string) {
 
 func shuffle(cards []Card) {
 	rand.Seed(time.Now().UnixNano())
-	rand.Shuffle(len(cards), func (i, j int) { cards[i], cards[j] = cards[j], cards[i] })
+	rand.Shuffle(len(cards), func(i, j int) { cards[i], cards[j] = cards[j], cards[i] })
 }
 
 func applyDirectionFlag(cards []Card) {
@@ -133,7 +135,11 @@ func shouldInvert(direc Direction) bool {
 	return direc == Inverse || (direc == Random && randomBool())
 }
 
-var randomBool = func () bool { return rand.Intn(2) == 0 }
+var randomBool = func() bool { return rand.Intn(2) == 0 }
 
-var min = func (a, b int) int { if a < b { return a }; return b }
-
+var min = func(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}

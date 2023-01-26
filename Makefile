@@ -20,7 +20,7 @@ build: fmt
 	go build -o $(bin_path)
 
 fmt:
-	go fmt
+	gofmt -s -w .
 
 publish:
 ifndef v

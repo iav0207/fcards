@@ -1,9 +1,9 @@
 package internal
 
 import (
+	"github.com/texttheater/golang-levenshtein/levenshtein"
 	"runtime"
 	"strings"
-	"github.com/texttheater/golang-levenshtein/levenshtein"
 )
 
 func LevenshteinDistance(a, b string) int {
