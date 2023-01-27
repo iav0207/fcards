@@ -12,7 +12,7 @@ var Home = os.Getenv("HOME")
 func ReadCardsFromPaths(paths []string) []Card {
 	cards := make([]Card, 0)
 	for _, filePath := range paths {
-		fmt.Printf("Reading cards from file %s\n", filePath)
+		Log.Printf("Reading cards from file %s\n", filePath)
 		cards = append(cards, ReadCardsFromPath(filePath)...)
 	}
 	return cards

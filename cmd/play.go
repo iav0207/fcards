@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	. "github.com/iav0207/fcards/internal"
 	"github.com/iav0207/fcards/internal/flags"
 	"github.com/spf13/cobra"
@@ -28,13 +27,13 @@ func init() {
 func run(cmd *cobra.Command, args []string) {
 	paths := argsOrAllTsvPaths(args)
 	cards := ReadCardsFromPaths(paths)
-	fmt.Printf("Read %d cards in total. ", len(cards))
+	Log.Println("Read", len(cards), "cards in total.")
 	exitIfEmpty(cards)
 
 	sample := randomSampleOf(cards, 20)
 	applyDirectionFlag(sample)
 
-	fmt.Println("Let's play!")
+	Log.Println("Let's play!")
 	reiterate := playRound(sample)
 	playRound(reiterate)
 }
@@ -48,7 +47,7 @@ func argsOrAllTsvPaths(args []string) []string {
 
 func exitIfEmpty(cards []Card) {
 	if len(cards) == 0 {
-		fmt.Println("Well, no game this time.")
+		Log.Println("Well, no game this time.")
 		os.Exit(0)
 	}
 }
@@ -57,7 +56,7 @@ func randomSampleOf(cards []Card, sizeLimit int) []Card {
 	shuffle(cards)
 	sample := cards[:min(len(cards), sizeLimit)]
 	if len(sample) != len(cards) {
-		fmt.Printf("Took a random sample of %d cards.\n", len(sample))
+		Log.Println("Took a random sample of", len(sample), "cards.")
 	}
 	return sample
 }
@@ -67,7 +66,7 @@ func playRound(cards []Card) []Card {
 	wrongAnswered := make([]Card, 0)
 
 	for _, card := range cards {
-		fmt.Printf("%s:\t", card.Question)
+		Log.Println(card.Question)
 		missScore := LevenshteinDistance(ReadLine(), card.Answer)
 		printResponse(missScore, card.Answer)
 		if missScore > 0 {
@@ -81,11 +80,11 @@ func playRound(cards []Card) []Card {
 func printResponse(missScore int, expected string) {
 	switch missScore {
 	case 0:
-		fmt.Println("✅")
+		Log.Println("✅")
 	case 1, 2:
-		fmt.Printf("🌼 Almost! %s\n", expected)
+		Log.Println("🌼 Almost!", expected)
 	default:
-		fmt.Printf("🍅 Expected: %s\n", expected)
+		Log.Println("🍅 Expected:", expected)
 	}
 }
 

@@ -38,6 +38,14 @@ ifndef q
 endif
 	grep -RS "$q" $(tsv_folder) || echo not found
 
+edit_card:
+# edit the tsv file under `.fcards/tsv` folder that contains given substring
+ifndef q
+	$(error query argument `q` is undefined)
+endif
+	$(eval found=$(shell grep -RSl "$q" $(tsv_folder) || echo ''))
+	@ vim -c "/$q" $(found)
+
 use_cards_from: # this should be a command of the tool itself
 ifndef path
 	$(error path argument `path` is undefined)
