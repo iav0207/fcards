@@ -14,7 +14,7 @@ var playCmd = &cobra.Command{
 	Use:   "play",
 	Short: "Start a quiz",
 	Long:  `Start a quiz. Usage: fcards play file1.tsv`,
-	Run:   run,
+	Run:   runPlay,
 }
 
 var direc flags.Direction = flags.Straight
@@ -24,7 +24,7 @@ func init() {
 	playCmd.Flags().Var(&direc, direc.Name(), direc.HelpMsg())
 }
 
-func run(cmd *cobra.Command, args []string) {
+func runPlay(cmd *cobra.Command, args []string) {
 	paths := argsOrAllTsvPaths(args)
 	cards := ReadCardsFromPaths(paths)
 	Log.Println("Read", len(cards), "cards in total.")

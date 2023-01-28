@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	fp "path/filepath"
@@ -8,6 +9,7 @@ import (
 )
 
 var Home = os.Getenv("HOME")
+var DefaultTsvFilesPattern = fmt.Sprintf("%s/.fcards/tsv/*.tsv", Home)
 
 func ReadCardsFromPaths(paths []string) []Card {
 	cards := make([]Card, 0)
@@ -20,41 +22,48 @@ func ReadCardsFromPaths(paths []string) []Card {
 
 func ReadCardsFromPath(filePath string) []Card {
 	cards := make([]Card, 0)
-	for _, line := range ReadLines(filePath) {
+	for line := range LinesOf(filePath) {
 		if len(line) == 0 {
 			continue
 		}
-		splitLine := s.Split(line, "\t")
-		if len(splitLine) < 2 {
-			panic("Expected every non-empty line to be a tab-separated pair: question and answer")
-		}
-		cards = append(cards, *NewCard(splitLine[0], splitLine[1]))
+		parsed, err := ParseCard(line)
+		Check(err)
+		cards = append(cards, *parsed)
 	}
 	return cards
 }
 
-func ReadLines(filePath string) []string {
-	return s.Split(ReadText(filePath), "\n")
+func ParseCard(line string) (*Card, error) {
+	splitLine := s.Split(line, "\t")
+	if len(splitLine) < 2 {
+		return nil, fmt.Errorf(`Expected every non-empty line to be a tab-separated pair: question and answer.
+		Got %s`, line)
+	}
+	return NewCard(splitLine[0], splitLine[1]), nil
 }
 
-func ReadText(filePath string) string {
-	data, err := os.ReadFile(filePath)
-	check(err)
-	return string(data)
+func LinesOf(filePath string) chan string {
+	file, err := os.Open(filePath)
+	Check(err)
+	sc := bufio.NewScanner(file)
+	sc.Split(bufio.ScanLines)
+	c := make(chan string)
+	go func() {
+		defer file.Close()
+		defer close(c)
+		for sc.Scan() {
+			c <- sc.Text()
+		}
+	}()
+	return c
 }
 
 func AllTsvPaths() []string {
-	return Glob(fmt.Sprintf("%s/.fcards/tsv/*.tsv", Home))
+	return Glob(DefaultTsvFilesPattern)
 }
 
 func Glob(glob string) []string {
 	paths, err := fp.Glob(glob)
-	check(err)
+	Check(err)
 	return paths
-}
-
-func check(e error) {
-	if e != nil {
-		panic(e)
-	}
 }
