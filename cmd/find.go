@@ -19,16 +19,24 @@ func init() {
 }
 
 func runFind(cmd *cobra.Command, args []string) {
-	if len(args) == 0 {
-		Log.Panicln("Must provide at least one argument - search term.")
-	}
+	runFindReturnFound(args)
+}
+
+func runFindReturnFound(args []string) map[string][]Card {
+	validateFindArgs(args)
 	term := args[0]
 	found := find(term)
 	if countValues(found) == 0 {
-		Log.Printf("Term '%s' is not found among %s", term, DefaultTsvFilesPattern)
-		return
+		Log.Fatalf("Term '%s' is not found among %s", term, DefaultTsvFilesPattern)
 	}
 	printOut(found)
+	return found
+}
+
+func validateFindArgs(args []string) {
+	if len(args) == 0 {
+		Log.Panicln("Must provide at least one argument - search term.")
+	}
 }
 
 func find(term string) map[string][]Card {
@@ -56,7 +64,7 @@ func countValues(m map[string][]Card) int {
 func printOut(occurrences map[string][]Card) {
 	for path, cards := range occurrences {
 		for _, card := range cards {
-			Log.Printf("%s\t%s\t%s", path, card.Question, card.Answer)
+			Log.Println(TabSeparated(path, card.Question, card.Answer))
 		}
 	}
 }

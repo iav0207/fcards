@@ -66,8 +66,7 @@ func playRound(cards []Card) []Card {
 	wrongAnswered := make([]Card, 0)
 
 	for _, card := range cards {
-		Log.Println(card.Question)
-		missScore := LevenshteinDistance(ReadLine(), card.Answer)
+		missScore := LevenshteinDistance(UserResponse(card.Question), card.Answer)
 		printResponse(missScore, card.Answer)
 		if missScore > 0 {
 			wrongAnswered = append(wrongAnswered, card)

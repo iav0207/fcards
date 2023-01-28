@@ -7,17 +7,15 @@ import (
 )
 
 func LevenshteinDistance(a, b string) int {
-	ar := []rune(normalize(a))
-	br := []rune(normalize(b))
 	opts := levenshtein.DefaultOptions
-	return levenshtein.DistanceForStrings(ar, br, opts)
+	return levenshtein.DistanceForStrings([]rune(a), []rune(b), opts)
 }
 
-func Compare(a, b string) int {
-	return strings.Compare(normalize(a), normalize(b))
+func TabSeparated(values ...string) string {
+	return strings.Join(values, "\t")
 }
 
-func normalize(s string) string {
+func trimRightLineBreak(s string) string {
 	return strings.TrimRight(s, lineBreak())
 }
 

@@ -58,6 +58,15 @@ func LinesOf(filePath string) chan string {
 	return c
 }
 
+func OverwriteFileWithLines(path string, lines []string) {
+	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	Check(err)
+	defer file.Close()
+	for _, line := range lines {
+		file.WriteString(line + "\n")
+	}
+}
+
 func AllTsvPaths() []string {
 	return Glob(DefaultTsvFilesPattern)
 }
