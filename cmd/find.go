@@ -6,7 +6,6 @@ import (
 	str "strings"
 )
 
-// findCmd represents the find command
 var findCmd = &cobra.Command{
 	Use:   "find",
 	Short: "Find a flashcard by a given substring",
@@ -56,10 +55,8 @@ func countValues(m map[string][]Card) int {
 
 func printOut(occurrences map[string][]Card) {
 	for path, cards := range occurrences {
-		Log.Printf("%s:", path)
-		for i, card := range cards {
-			Log.Printf("%d\tQ\t%s", i, card.Question)
-			Log.Printf("\tA\t%s", card.Answer)
+		for _, card := range cards {
+			Log.Printf("%s\t%s\t%s", path, card.Question, card.Answer)
 		}
 	}
 }
