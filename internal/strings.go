@@ -15,6 +15,10 @@ func TabSeparated(values ...string) string {
 	return strings.Join(values, "\t")
 }
 
+func IsBlank(s string) bool {
+	return len(strings.TrimSpace(s)) == 0
+}
+
 func trimRightLineBreak(s string) string {
 	return strings.TrimRight(s, lineBreak())
 }

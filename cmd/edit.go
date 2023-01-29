@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	. "github.com/iav0207/fcards/internal"
 	"github.com/spf13/cobra"
 )
@@ -31,8 +32,8 @@ func runEdit(cmd *cobra.Command, args []string) {
 }
 
 func edit(path string, card Card) {
-	q := UserResponse("Please enter the new question (card front side) below:")
-	a := UserResponse("Please enter the new answer (card flip side) below:")
+	q := defaultedInput("the new question (card front side)", card.Question)
+	a := defaultedInput("the new answer (card flip side)", card.Answer)
 	content := make([]string, 0)
 	for line := range LinesOf(path) {
 		if line == card.String() {
@@ -41,6 +42,16 @@ func edit(path string, card Card) {
 		content = append(content, line)
 	}
 	OverwriteFileWithLines(path, content)
+}
+
+func defaultedInput(ofWhat, defaultValue string) string {
+	promptFmt := "Please enter %s below. Leave blank to keep it as is."
+	prompt := fmt.Sprintf(promptFmt, ofWhat)
+	input := UserResponse(prompt)
+	if IsBlank(input) {
+		return defaultValue
+	}
+	return input
 }
 
 func firstCard(m map[string][]Card) (string, Card) {
