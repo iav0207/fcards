@@ -18,13 +18,17 @@ func ReadLine() string {
 }
 
 func UserConfirms(prompt string) bool {
+	items := []string{"yes", "no"}
+	result := UserSelection(prompt, items)
+	return str.ToLower(result) == "yes"
+}
+
+func UserSelection(prompt string, items []string) string {
 	selector := pui.Select{
-		Label: prompt + " [y/n]",
-		Items: []string{"y", "n"},
+		Label: prompt,
+		Items: items,
 	}
 	_, result, err := selector.Run()
-	if err != nil {
-		Log.Fatalf("Prompt failed %w\n", err)
-	}
-	return str.ToLower(result) == "y"
+	FatalIf(err, "Prompt failed")
+	return result
 }

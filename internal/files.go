@@ -67,6 +67,15 @@ func OverwriteFileWithLines(path string, lines []string) {
 	}
 }
 
+func AppendToFile(path string, lines ...string) {
+	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	FatalIf(err, "Could not open the file")
+	defer file.Close()
+	for _, line := range lines {
+		file.WriteString(line + "\n")
+	}
+}
+
 func AllTsvPaths() []string {
 	return Glob(DefaultTsvFilesPattern)
 }
