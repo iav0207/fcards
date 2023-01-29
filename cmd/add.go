@@ -48,6 +48,6 @@ func posArgOrSelection(args []string, pos int, prompt string, items []string) st
 }
 
 func validated(s string) string {
-	Assert(!str.ContainsAny(s, "\t\r\n"), "Tabs and line breaks are not allowed")
+	Require(!str.ContainsAny(s, "\t\r\n"), "Tabs and line breaks are not allowed")
 	return s
 }

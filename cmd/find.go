@@ -7,11 +7,10 @@ import (
 )
 
 var findCmd = &cobra.Command{
-	Use:   "find",
+	Use:   "find [search_term]",
 	Short: "Find a flashcard by a given substring",
-	Long: `Usage: fcards find 'some phrase I forgot'.
-	It will output the found cards contained in the default folder.`,
-	Run: func(cmd *cobra.Command, args []string) { runFindReturnFound(args) },
+	Long:  `It will output the found cards contained in the default folder.`,
+	Run:   func(cmd *cobra.Command, args []string) { runFindReturnFound(args) },
 }
 
 func init() {
@@ -19,20 +18,12 @@ func init() {
 }
 
 func runFindReturnFound(args []string) map[string][]Card {
-	validateFindArgs(args)
-	term := args[0]
+	Require(len(args) > 0, "Must provide at least one argument - search term.")
+	term := str.Join(args, " ")
 	found := find(term)
-	if countValues(found) == 0 {
-		Log.Fatalf("Term '%s' is not found among %s", term, DefaultTsvFilesPattern)
-	}
+	Require(countValues(found) > 0, "Term '%s' is not found among %s", term, DefaultTsvFilesPattern)
 	printOut(found)
 	return found
-}
-
-func validateFindArgs(args []string) {
-	if len(args) == 0 {
-		Log.Panicln("Must provide at least one argument - search term.")
-	}
 }
 
 func find(term string) map[string][]Card {

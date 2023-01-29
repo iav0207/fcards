@@ -7,7 +7,7 @@ import (
 )
 
 var editCmd = &cobra.Command{
-	Use:   "edit",
+	Use:   "edit [search_term]",
 	Short: "Edit a flashcard by a given substring",
 	Long: `Usage: fcards edit 'phrase I want to correct'.
 	It will search the term among the cards contained in the default folder,
@@ -22,7 +22,7 @@ func init() {
 func runEdit(cmd *cobra.Command, args []string) {
 	found := runFindReturnFound(args)
 	Assert(len(found) > 0)
-	Assert(len(found) == 1, "More than one occurrence found. Please make the request more specific")
+	Require(len(found) == 1, "More than one occurrence found. Please make the request more specific")
 
 	path, card := firstCard(found)
 
