@@ -11,15 +11,11 @@ var findCmd = &cobra.Command{
 	Short: "Find a flashcard by a given substring",
 	Long: `Usage: fcards find 'some phrase I forgot'.
 	It will output the found cards contained in the default folder.`,
-	Run: runFind,
+	Run: func(cmd *cobra.Command, args []string) { runFindReturnFound(args) },
 }
 
 func init() {
 	rootCmd.AddCommand(findCmd)
-}
-
-func runFind(cmd *cobra.Command, args []string) {
-	runFindReturnFound(args)
 }
 
 func runFindReturnFound(args []string) map[string][]Card {
