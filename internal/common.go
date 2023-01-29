@@ -6,7 +6,7 @@ func Assert(condition bool, optionalMsg ...string) {
 	}
 }
 
-func Check(err error) {
+func PanicIf(err error) {
 	if err != nil {
 		panic(err)
 	}

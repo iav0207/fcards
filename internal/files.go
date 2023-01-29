@@ -27,7 +27,7 @@ func ReadCardsFromPath(filePath string) []Card {
 			continue
 		}
 		parsed, err := ParseCard(line)
-		Check(err)
+		PanicIf(err)
 		cards = append(cards, *parsed)
 	}
 	return cards
@@ -44,7 +44,7 @@ func ParseCard(line string) (*Card, error) {
 
 func LinesOf(filePath string) chan string {
 	file, err := os.Open(filePath)
-	Check(err)
+	PanicIf(err)
 	sc := bufio.NewScanner(file)
 	sc.Split(bufio.ScanLines)
 	c := make(chan string)
@@ -60,7 +60,7 @@ func LinesOf(filePath string) chan string {
 
 func OverwriteFileWithLines(path string, lines []string) {
 	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
-	Check(err)
+	PanicIf(err)
 	defer file.Close()
 	for _, line := range lines {
 		file.WriteString(line + "\n")
@@ -73,6 +73,6 @@ func AllTsvPaths() []string {
 
 func Glob(glob string) []string {
 	paths, err := fp.Glob(glob)
-	Check(err)
+	PanicIf(err)
 	return paths
 }

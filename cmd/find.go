@@ -45,7 +45,7 @@ func find(term string) map[string][]Card {
 		for line := range LinesOf(path) {
 			if str.Contains(line, term) {
 				parsed, err := ParseCard(line)
-				Check(err)
+				PanicIf(err)
 				found[path] = append(found[path], *parsed)
 			}
 		}
