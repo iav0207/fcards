@@ -21,16 +21,17 @@ func init() {
 
 // term answer path
 func runAdd(cmd *cobra.Command, args []string) {
-	q := posArgOrUserResponse(args, 0, "Please enter the question (card front side):")
-	validated(q)
-
-	a := posArgOrUserResponse(args, 1, "Please enter the answer (card flip side):")
-	validated(a)
-
+	q := validated(posArgOrUserResponse(args, 0, "Please enter the question (card front side):"))
+	a := validated(posArgOrUserResponse(args, 1, "Please enter the answer (card flip side):"))
 	path := posArgOrSelection(args, 2, "Where to put it? (file path)", AllTsvPaths())
 
 	card := NewCard(q, a)
 	AppendToFile(path, card.String())
+}
+
+func validated(s string) string {
+	Require(!str.ContainsAny(s, "\t\r\n"), "Tabs and line breaks are not allowed")
+	return s
 }
 
 func posArgOrUserResponse(args []string, pos int, prompt string) string {
@@ -45,9 +46,4 @@ func posArgOrSelection(args []string, pos int, prompt string, items []string) st
 		return args[pos]
 	}
 	return UserSelection(prompt, items)
-}
-
-func validated(s string) string {
-	Require(!str.ContainsAny(s, "\t\r\n"), "Tabs and line breaks are not allowed")
-	return s
 }

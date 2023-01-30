@@ -29,7 +29,7 @@ func runFindReturnFound(args []string) map[string][]Card {
 func find(term string) map[string][]Card {
 	found := make(map[string][]Card)
 	for _, path := range AllTsvPaths() {
-		for line := range LinesOf(path) {
+		for line := range LinesFrom(path) {
 			if str.Contains(line, term) {
 				parsed, err := ParseCard(line)
 				PanicIf(err)

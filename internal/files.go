@@ -3,13 +3,14 @@ package internal
 import (
 	"bufio"
 	"fmt"
+	fpx "github.com/yargevad/filepathx"
 	"os"
-	fp "path/filepath"
 	s "strings"
 )
 
 var Home = os.Getenv("HOME")
-var DefaultTsvFilesPattern = fmt.Sprintf("%s/.fcards/tsv/*.tsv", Home)
+var DefaultTsvFilesPattern = fmt.Sprintf("%s/.fcards/tsv/**/*.tsv", Home)
+var AllTsvPaths = func() []string { return Glob(DefaultTsvFilesPattern) }
 
 func ReadCardsFromPaths(paths []string) []Card {
 	cards := make([]Card, 0)
@@ -22,7 +23,7 @@ func ReadCardsFromPaths(paths []string) []Card {
 
 func ReadCardsFromPath(filePath string) []Card {
 	cards := make([]Card, 0)
-	for line := range LinesOf(filePath) {
+	for line := range LinesFrom(filePath) {
 		if len(line) == 0 {
 			continue
 		}
@@ -42,7 +43,7 @@ func ParseCard(line string) (*Card, error) {
 	return NewCard(splitLine[0], splitLine[1]), nil
 }
 
-func LinesOf(filePath string) chan string {
+func LinesFrom(filePath string) chan string {
 	file, err := os.Open(filePath)
 	PanicIf(err)
 	sc := bufio.NewScanner(file)
@@ -76,12 +77,8 @@ func AppendToFile(path string, lines ...string) {
 	}
 }
 
-func AllTsvPaths() []string {
-	return Glob(DefaultTsvFilesPattern)
-}
-
 func Glob(glob string) []string {
-	paths, err := fp.Glob(glob)
+	paths, err := fpx.Glob(glob)
 	PanicIf(err)
 	return paths
 }

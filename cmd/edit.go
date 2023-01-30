@@ -35,7 +35,7 @@ func edit(path string, card Card) {
 	q := defaultedInput("the new question (card front side)", card.Question)
 	a := defaultedInput("the new answer (card flip side)", card.Answer)
 	content := make([]string, 0)
-	for line := range LinesOf(path) {
+	for line := range LinesFrom(path) {
 		if line == card.String() {
 			line = NewCard(q, a).String()
 		}
