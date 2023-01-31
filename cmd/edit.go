@@ -35,12 +35,15 @@ func edit(path string, card Card) {
 	q := defaultedInput("the new question (card front side)", card.Question)
 	a := defaultedInput("the new answer (card flip side)", card.Answer)
 	content := make([]string, 0)
+	updatedLines := 0
 	for line := range LinesFrom(path) {
-		if line == card.String() {
-			line = NewCard(q, a).String()
+		if line == card.String() { // FIXME support comments
+			line = NewCard(q, a, "").String()
+			updatedLines++
 		}
 		content = append(content, line)
 	}
+	Assert(updatedLines == 1, "Expected to update one line, was about to update", updatedLines)
 	OverwriteFileWithLines(path, content)
 }
 

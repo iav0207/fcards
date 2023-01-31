@@ -25,7 +25,7 @@ func runAdd(cmd *cobra.Command, args []string) {
 	a := validated(posArgOrUserResponse(args, 1, "Please enter the answer (card flip side):"))
 	path := posArgOrSelection(args, 2, "Where to put it? (file path)", AllTsvPaths())
 
-	card := NewCard(q, a)
+	card := NewCard(q, a, "")
 	AppendToFile(path, card.String())
 }
 

@@ -40,7 +40,12 @@ func ParseCard(line string) (*Card, error) {
 		return nil, fmt.Errorf(`Expected every non-empty line to be a tab-separated pair: question and answer.
 		Got %s`, line)
 	}
-	return NewCard(splitLine[0], splitLine[1]), nil
+	question, answer := splitLine[0], splitLine[1]
+	comment := ""
+	if len(splitLine) > 2 {
+		comment = splitLine[2]
+	}
+	return NewCard(question, answer, comment), nil
 }
 
 func LinesFrom(filePath string) chan string {
