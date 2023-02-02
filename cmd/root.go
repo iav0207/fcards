@@ -10,7 +10,6 @@ var rootCmd = &cobra.Command{
 	Use:   "fcards",
 	Short: "Simple command-line flashcards",
 	Long:  `Point it at a tab-separated file and play a quiz.`,
-	Run:   runPlay,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
