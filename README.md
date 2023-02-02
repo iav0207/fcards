@@ -5,7 +5,7 @@ Command line local application that helps me practice languages using flashcards
 Key features inlcude:
 
 - practice with a random sample taken from a given set of flashcards
-- practice cards in the default direction, or inverse (questions swapped with answers), or random, which is my favorite
+- practice with cards having more than one correct answer
 - at the end of a round reiterate over the cards that were given incorrect answers
 
 ## Installation
@@ -35,7 +35,7 @@ To learn more about `play` command consult `fcards play --help`.
 ## Input format
 
 A file represents a deck of flashcards, one per non-empty line.
-Every line is expected to be a tab-separated pair of a question and an answer.
+Every line is expected to be a tab-separated pair of a question and an answer, and an optional comment following the second tab character.
 
 Here's an example fragment of one of my decks:
 
@@ -50,6 +50,48 @@ die Rohkost	the raw food
 verschlucken	to swallow
 benetzen	to moisten
 der Schleim	the mucus
+```
+
+### Multiple meanings
+
+If among the given set of cards there are ones that have common values (questions or answers), as in
+
+```tsv
+streiten	to fight
+kämpfen	to fight
+```
+
+or
+
+```
+doch	after all
+doch	but
+doch	however
+```
+
+all values will be taken into account when grading your answer.
+If you made a mistake, the program will print the expected variant - the closest of all,
+and the rest will be shown as also correct, just to remind you of them.
+
+### Comments
+
+A comment can be written following the answer of the card in the input TSV file like this:
+
+```tsv
+weitermachen	to continue	colloquial
+fortfahren	to continue	formal
+```
+
+The comment, if present, will not be used to evaluate given answers during the game, but will be printed in brackets
+when showing you alternatives.
+For example:
+
+```
+to continue
+weitermachen
+✅
+But also:
+fortfahren (formal)
 ```
 
 ### My flashcards collection
