@@ -22,7 +22,7 @@ func init() {
 func runEdit(cmd *cobra.Command, args []string) {
 	found := runFindReturnFound(args)
 	Assert(len(found) > 0)
-	Require(len(found) == 1, "More than one occurrence found. Please make the request more specific")
+	Require(countValues(found) == 1, "More than one occurrence found. Please make the request more specific")
 
 	path, card := firstCard(found)
 

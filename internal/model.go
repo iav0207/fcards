@@ -53,7 +53,16 @@ func IndexMultiCards(multicards []*MultiCard) map[string]*MultiCard {
 	return index
 }
 
-func GroupCards0(cards []Card) map[string][]Card {
+func ToMultiCards(cards []Card) []*MultiCard {
+	multimap := GroupByQuestion(cards)
+	multicards := make([]*MultiCard, 0, len(multimap))
+	for q, cards := range multimap {
+		multicards = append(multicards, NewMultiCard(q, deduplicate(cards)))
+	}
+	return multicards
+}
+
+func GroupByQuestion(cards []Card) map[string][]Card {
 	multimap := make(map[string][]Card)
 	for _, card := range cards {
 		multimap[card.Question] = append(multimap[card.Question], card)
@@ -61,11 +70,17 @@ func GroupCards0(cards []Card) map[string][]Card {
 	return multimap
 }
 
-func GroupCards(cards []Card) []*MultiCard {
-	multimap := GroupCards0(cards)
-	multicards := make([]*MultiCard, 0, len(multimap))
-	for q, cards := range multimap {
-		multicards = append(multicards, NewMultiCard(q, cards))
+func deduplicate(cards []Card) []Card {
+	set := make(map[Card]struct{})
+	member := struct{}{}
+	for _, card := range cards {
+		set[card] = member
 	}
-	return multicards
+	slice := make([]Card, len(set))
+	i := 0
+	for card := range set {
+		slice[i] = card
+		i++
+	}
+	return slice
 }
