@@ -8,6 +8,13 @@ Key features inlcude:
 - practice with cards having more than one correct answer
 - at the end of a round reiterate over the cards that were given incorrect answers
 
++ [Installation](#installation)
++ [Usage](#usage)
++ [Input format](#input-format)
+    * [Multiple meanings](#multiple-meanings)
+    * [Comments](#comments)
+    * [My flashcards collection](#my-flashcards-collection)
+
 ## Installation
 
 Assuming you have Go installed and `$GOPATH` configured, you just need to run
@@ -35,7 +42,7 @@ To learn more about `play` command consult `fcards play --help`.
 ## Input format
 
 A file represents a deck of flashcards, one per non-empty line.
-Every line is expected to be a tab-separated pair of a question and an answer, and an optional comment following the second tab character.
+Every line is expected to be a tab-separated pair of a question and an answer, and an optional comment following the second tab character (see [comments](#comments)).
 
 Here's an example fragment of one of my decks:
 
