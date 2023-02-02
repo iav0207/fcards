@@ -1,21 +1,24 @@
 package game
 
-import . "github.com/iav0207/fcards/internal"
+import (
+	. "github.com/iav0207/fcards/internal"
+	"github.com/iav0207/fcards/internal/model"
+)
 
-func Evaluate(multicard MultiCard, response string) Scored {
+func Evaluate(multicard model.MultiCard, response string) Scored {
 	return Evaluator.Score(multicard, response)
 }
 
 type responseEvaluator interface {
-	Score(multicard MultiCard, response string) scoredResponse
+	Score(multicard model.MultiCard, response string) scoredResponse
 }
 
 type Scored interface {
-	MultiCard() MultiCard
+	MultiCard() model.MultiCard
 	MissScore() int
 	Expected() string
 	Actual() string
-	Alternatives() []Card
+	Alternatives() []model.Card
 }
 
 type evaluator struct{}
@@ -23,7 +26,7 @@ type evaluator struct{}
 var Evaluator responseEvaluator = evaluator{}
 
 // TODO score | assessment -> grade
-func (ev evaluator) Score(multicard MultiCard, response string) scoredResponse {
+func (ev evaluator) Score(multicard model.MultiCard, response string) scoredResponse {
 	initMissScore := LevenshteinDistance(response, multicard.Cards[0].Answer)
 	ret := scoredResponse{multicard, response, 0, initMissScore}
 	for i, card := range multicard.Cards {
@@ -37,13 +40,13 @@ func (ev evaluator) Score(multicard MultiCard, response string) scoredResponse {
 }
 
 type scoredResponse struct {
-	multicard    MultiCard
+	multicard    model.MultiCard
 	response     string
 	bestMatchIdx int
 	missScore    int
 }
 
-func (sr scoredResponse) MultiCard() MultiCard {
+func (sr scoredResponse) MultiCard() model.MultiCard {
 	return sr.multicard
 }
 
@@ -59,8 +62,8 @@ func (sr scoredResponse) Actual() string {
 	return sr.response
 }
 
-func (sr scoredResponse) Alternatives() []Card {
-	alt := make([]Card, 0, len(sr.multicard.Cards)-1)
+func (sr scoredResponse) Alternatives() []model.Card {
+	alt := make([]model.Card, 0, len(sr.multicard.Cards)-1)
 	for i, card := range sr.multicard.Cards {
 		if i != sr.bestMatchIdx {
 			alt = append(alt, card)

@@ -6,37 +6,39 @@ import (
 
 	. "github.com/iav0207/fcards/internal"
 	"github.com/iav0207/fcards/internal/flags"
+	"github.com/iav0207/fcards/internal/model"
 )
 
 type Sampler interface {
-	RandomSampleOfMultiCardsFrom(cards []Card) []*MultiCard
+	RandomSampleOfMultiCardsFrom(cards []model.Card) []*model.MultiCard
 }
 
 type sampler struct {
 	sizeLimit int
 }
 
-var SamplerService = sampler{20} // TODO config?
+var sampleSizeLimit int = GetConfig().GameDeckSize
+var SamplerService = sampler{sampleSizeLimit}
 
-func RandomSampleOfMultiCardsFrom(cards []Card) []*MultiCard {
+func RandomSampleOfMultiCardsFrom(cards []model.Card) []*model.MultiCard {
 	return SamplerService.RandomSampleOfMultiCardsFrom(cards)
 }
 
-func (s sampler) RandomSampleOfMultiCardsFrom(cards []Card) []*MultiCard {
-	mcDirect := IndexMultiCards(ToMultiCards(cards))
-	mcInverse := IndexMultiCards(ToMultiCards(invert(cards)))
+func (s sampler) RandomSampleOfMultiCardsFrom(cards []model.Card) []*model.MultiCard {
+	var mcDirect index = createIndex(cards)
+	var mcInverse index = createIndex(invert(cards))
 
-	limit := min(len(mcDirect), len(mcInverse), s.sizeLimit)
+	var limit int = min(len(mcDirect), len(mcInverse), s.sizeLimit)
 
 	keysDirect := assignDirection(keysOf(mcDirect)[:limit], flags.Straight)
 	keysInverse := assignDirection(keysOf(mcInverse)[:limit], flags.Inverse)
 
-	keyPool := append(keysDirect, keysInverse...)
+	var keyPool []directedQuestion = append(keysDirect, keysInverse...)
 	shuffleQuestions(keyPool)
 	keyPool = keyPool[:limit]
-	sample := make([]*MultiCard, 0, limit)
+	sample := make([]*model.MultiCard, 0, limit)
 	for _, key := range keyPool {
-		var mCard MultiCard
+		var mCard model.MultiCard
 		if key.direc == flags.Straight {
 			mCard = *mcDirect[key.question]
 		} else {
@@ -50,8 +52,14 @@ func (s sampler) RandomSampleOfMultiCardsFrom(cards []Card) []*MultiCard {
 	return sample
 }
 
-func invert(cards []Card) []Card {
-	inverted := make([]Card, 0, len(cards))
+type index = map[string]*model.MultiCard
+
+func createIndex(cards []model.Card) index {
+	return model.IndexMultiCards(model.ToMultiCards(cards))
+}
+
+func invert(cards []model.Card) []model.Card {
+	inverted := make([]model.Card, 0, len(cards))
 	for _, card := range cards {
 		card.Invert()
 		inverted = append(inverted, card)
@@ -64,10 +72,10 @@ type directedQuestion struct {
 	direc    flags.Direction
 }
 
-func keysOf(m map[string]*MultiCard) []string {
-	keys := make([]string, len(m))
+func keysOf(idx index) []string {
+	keys := make([]string, len(idx))
 	i := 0
-	for key := range m {
+	for key := range idx {
 		keys[i] = key
 		i++
 	}
