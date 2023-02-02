@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	. "github.com/iav0207/fcards/internal"
+	"github.com/iav0207/fcards/internal/model"
 	"github.com/spf13/cobra"
 )
 
@@ -22,7 +23,7 @@ func init() {
 func runEdit(cmd *cobra.Command, args []string) {
 	found := runFindReturnFound(args)
 	Assert(len(found) > 0)
-	Require(len(found) == 1, "More than one occurrence found. Please make the request more specific")
+	Require(countValues(found) == 1, "More than one occurrence found. Please make the request more specific")
 
 	path, card := firstCard(found)
 
@@ -31,16 +32,19 @@ func runEdit(cmd *cobra.Command, args []string) {
 	}
 }
 
-func edit(path string, card Card) {
+func edit(path string, card model.Card) {
 	q := defaultedInput("the new question (card front side)", card.Question)
 	a := defaultedInput("the new answer (card flip side)", card.Answer)
 	content := make([]string, 0)
+	updatedLines := 0
 	for line := range LinesFrom(path) {
-		if line == card.String() {
-			line = NewCard(q, a).String()
+		if line == card.String() { // FIXME support comments
+			line = model.NewCard(q, a, "").String()
+			updatedLines++
 		}
 		content = append(content, line)
 	}
+	Assert(updatedLines == 1, "Expected to update one line, was about to update", updatedLines)
 	OverwriteFileWithLines(path, content)
 }
 
@@ -54,7 +58,7 @@ func defaultedInput(ofWhat, defaultValue string) string {
 	return input
 }
 
-func firstCard(m map[string][]Card) (string, Card) {
+func firstCard(m map[string][]model.Card) (string, model.Card) {
 	for k, v := range m {
 		return k, v[0]
 	}

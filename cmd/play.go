@@ -1,12 +1,15 @@
 package cmd
 
 import (
+	"fmt"
+	"os"
+
 	. "github.com/iav0207/fcards/internal"
 	"github.com/iav0207/fcards/internal/flags"
+	"github.com/iav0207/fcards/internal/game"
+	"github.com/iav0207/fcards/internal/model"
+
 	"github.com/spf13/cobra"
-	"math/rand"
-	"os"
-	"time"
 )
 
 // playCmd represents the play command
@@ -25,13 +28,13 @@ func init() {
 }
 
 func runPlay(cmd *cobra.Command, args []string) {
+	Require(direc == flags.Random, "Only Random mode is supported at the moment")
 	paths := argsOrAllTsvPaths(args)
 	cards := ReadCardsFromPaths(paths)
 	Log.Println("Read", len(cards), "cards in total.")
 	exitIfEmpty(cards)
 
-	sample := randomSampleOf(cards, 20)
-	applyDirectionFlag(sample)
+	sample := game.RandomSampleOfMultiCardsFrom(cards)
 
 	Log.Println("Let's play!")
 	reiterate := playRound(sample)
@@ -45,70 +48,51 @@ func argsOrAllTsvPaths(args []string) []string {
 	return AllTsvPaths()
 }
 
-func exitIfEmpty(cards []Card) {
+func exitIfEmpty(cards []model.Card) {
 	if len(cards) == 0 {
 		Log.Println("Well, no game this time.")
 		os.Exit(0)
 	}
 }
 
-func randomSampleOf(cards []Card, sizeLimit int) []Card {
-	shuffle(cards)
-	sample := cards[:min(len(cards), sizeLimit)]
-	if len(sample) != len(cards) {
-		Log.Println("Took a random sample of", len(sample), "cards.")
-	}
-	return sample
-}
-
 // Plays a round with given cards and returns those which were given wrong answers to.
-func playRound(cards []Card) []Card {
-	wrongAnswered := make([]Card, 0)
+func playRound(multicards []*model.MultiCard) []*model.MultiCard {
+	wrongAnswered := make([]*model.MultiCard, 0)
 
-	for _, card := range cards {
-		missScore := LevenshteinDistance(UserResponse(card.Question), card.Answer)
-		printResponse(missScore, card.Answer)
-		if missScore > 0 {
-			wrongAnswered = append(wrongAnswered, card)
+	for _, mCard := range multicards {
+		Log.Println("")
+		response := UserResponse(mCard.Question)
+		scored := game.Evaluate(*mCard, response)
+		printGrade(scored)
+		if scored.MissScore() > 0 {
+			wrongAnswered = append(wrongAnswered, mCard)
 		}
 	}
 
 	return wrongAnswered
 }
 
-func printResponse(missScore int, expected string) {
-	switch missScore {
+func printGrade(sr game.Scored) {
+	switch sr.MissScore() {
 	case 0:
 		Log.Println("✅")
 	case 1, 2:
-		Log.Println("🌼 Almost!", expected)
+		Log.Println("🌼 Almost!", sr.Expected())
 	default:
-		Log.Println("🍅 Expected:", expected)
+		Log.Println("🍅 Expected:", sr.Expected())
+	}
+	alternatives := sr.Alternatives()
+	if len(alternatives) > 0 {
+		Log.Println("Also valid:")
+	}
+	for _, alt := range alternatives {
+		Log.Println(answerWithComment(alt))
 	}
 }
 
-func shuffle(cards []Card) {
-	rand.Seed(time.Now().UnixNano())
-	rand.Shuffle(len(cards), func(i, j int) { cards[i], cards[j] = cards[j], cards[i] })
-}
-
-func applyDirectionFlag(cards []Card) {
-	for i := 0; i < len(cards); i++ {
-		if shouldInvert() {
-			cards[i].Invert()
-		}
+func answerWithComment(card model.Card) string {
+	if IsBlank(card.Comment) {
+		return card.Answer
 	}
-}
-
-func shouldInvert() bool {
-	return direc == flags.Inverse || (direc == flags.Random && randomBool())
-}
-
-var randomBool = func() bool { return rand.Intn(2) == 0 }
-
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
+	return fmt.Sprintf("%s (%s)", card.Answer, card.Comment)
 }
