@@ -63,7 +63,7 @@ kämpfen	to fight
 
 or
 
-```
+```tsv
 doch	after all
 doch	but
 doch	however
