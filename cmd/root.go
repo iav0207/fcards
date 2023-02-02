@@ -10,14 +10,22 @@ var rootCmd = &cobra.Command{
 	Use:   "fcards",
 	Short: "Simple command-line flashcards",
 	Long:  `Point it at a tab-separated file and play a quiz.`,
+	Run:   runPlay,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
+	defaultArgsIfNoneGiven()
 	err := rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
+	}
+}
+
+func defaultArgsIfNoneGiven() {
+	if len(os.Args) < 2 {
+		os.Args = append(os.Args, []string{"play", "--direc", "random"}...)
 	}
 }
 
