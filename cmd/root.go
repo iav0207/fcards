@@ -22,9 +22,11 @@ func Execute() {
 	}
 }
 
+var defaultArgs []string = []string{"play", "--direc", "random"}
+
 func defaultArgsIfNoneGiven() {
 	if len(os.Args) < 2 {
-		os.Args = append(os.Args, []string{"play", "--direc", "random"}...)
+		os.Args = append(os.Args, defaultArgs...)
 	}
 }
 

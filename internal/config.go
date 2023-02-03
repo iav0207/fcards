@@ -8,6 +8,4 @@ type Config struct {
 	GameDeckSize int
 }
 
-var cfg Config = Config{
-	GameDeckSize: 20,
-}
+var cfg = Config{GameDeckSize: 20}

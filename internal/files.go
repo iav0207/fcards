@@ -29,7 +29,7 @@ func ReadCardsFromPath(filePath string) []model.Card {
 			continue
 		}
 		parsed, err := ParseCard(line)
-		PanicIf(err)
+		FatalIf(err, "Failed to load the cards.")
 		cards = append(cards, *parsed)
 	}
 	return cards
@@ -38,8 +38,7 @@ func ReadCardsFromPath(filePath string) []model.Card {
 func ParseCard(line string) (*model.Card, error) {
 	splitLine := s.Split(line, "\t")
 	if len(splitLine) < 2 {
-		return nil, fmt.Errorf(`Expected every non-empty line to be a tab-separated pair: question and answer.
-		Got %s`, line)
+		return nil, fmt.Errorf(`Expected every non-empty line to be a tab-separated pair: question and answer. Got: %s`, line)
 	}
 	question, answer := splitLine[0], splitLine[1]
 	comment := ""
