@@ -14,11 +14,14 @@ type Sampler interface {
 }
 
 type sampler struct {
-	sizeLimit int
+	sizeLimit  int
+	randomSeed int64
 }
 
-var sampleSizeLimit int = GetConfig().GameDeckSize
-var SamplerService = sampler{sampleSizeLimit}
+var SamplerService = sampler{
+	sizeLimit:  GetConfig().GameDeckSize,
+	randomSeed: time.Now().UnixNano(),
+}
 
 func RandomSampleOfMultiCardsFrom(cards []model.Card) []*model.MultiCard {
 	return SamplerService.RandomSampleOfMultiCardsFrom(cards)
@@ -34,7 +37,7 @@ func (s sampler) RandomSampleOfMultiCardsFrom(cards []model.Card) []*model.Multi
 	keysInverse := assignDirection(keysOf(mcInverse)[:limit], flags.Inverse)
 
 	var keyPool []directedQuestion = append(keysDirect, keysInverse...)
-	shuffleQuestions(keyPool)
+	s.shuffleQuestions(keyPool)
 	keyPool = keyPool[:limit]
 	sample := make([]*model.MultiCard, 0, limit)
 	for _, key := range keyPool {
@@ -92,8 +95,8 @@ func assignDirection(questions []string, direc flags.Direction) []directedQuesti
 	return ret
 }
 
-func shuffleQuestions(questions []directedQuestion) {
-	rand.Seed(time.Now().UnixNano())
+func (s sampler) shuffleQuestions(questions []directedQuestion) {
+	rand.Seed(s.randomSeed)
 	rand.Shuffle(len(questions), func(i, j int) { questions[i], questions[j] = questions[j], questions[i] })
 }
 

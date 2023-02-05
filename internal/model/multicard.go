@@ -7,17 +7,7 @@ type MultiCard struct {
 }
 
 func NewMultiCard(q string, cards []Card) *MultiCard {
-	set := make(map[string]*Card)
-	for _, card := range cards {
-		set[card.String()] = &card
-	}
-	uniqueCards := make([]Card, len(set))
-	i := 0
-	for _, card := range set {
-		uniqueCards[i] = *card
-		i++
-	}
-	return &MultiCard{q, cards}
+	return &MultiCard{q, deduplicate(cards)}
 }
 
 func IndexMultiCards(multicards []*MultiCard) map[string]*MultiCard {
@@ -31,8 +21,8 @@ func IndexMultiCards(multicards []*MultiCard) map[string]*MultiCard {
 func ToMultiCards(cards []Card) []*MultiCard {
 	multimap := GroupByQuestion(cards)
 	multicards := make([]*MultiCard, 0, len(multimap))
-	for q, cards := range multimap {
-		multicards = append(multicards, NewMultiCard(q, deduplicate(cards)))
+	for q, qCards := range multimap {
+		multicards = append(multicards, NewMultiCard(q, qCards))
 	}
 	return multicards
 }
@@ -46,16 +36,15 @@ func GroupByQuestion(cards []Card) map[string][]Card {
 }
 
 func deduplicate(cards []Card) []Card {
-	set := make(map[Card]struct{})
-	member := struct{}{}
+	type member = struct{}
+	set := make(map[Card]member)
+	result := make([]Card, 0)
 	for _, card := range cards {
-		set[card] = member
+		_, seen := set[card]
+		if !seen {
+			result = append(result, card)
+			set[card] = member{}
+		}
 	}
-	slice := make([]Card, len(set))
-	i := 0
-	for card := range set {
-		slice[i] = card
-		i++
-	}
-	return slice
+	return result
 }

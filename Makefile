@@ -19,6 +19,9 @@ play:
 build: fmt
 	go build -o $(bin_path)
 
+test:
+	go test ./...
+
 fmt:
 	gofmt -s -w .
 

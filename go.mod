@@ -3,6 +3,7 @@ module github.com/iav0207/fcards
 go 1.19
 
 require (
+	github.com/go-test/deep v1.1.0
 	github.com/manifoldco/promptui v0.9.0
 	github.com/spf13/cobra v1.6.1
 	github.com/texttheater/golang-levenshtein/levenshtein v0.0.0-20200805054039-cae8b0eaed6c
