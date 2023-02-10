@@ -35,7 +35,7 @@ func find(term string) map[string][]card.Card {
 	for _, path := range data.AllTsvPaths() {
 		for line := range data.LinesFrom(path) {
 			if strings.Contains(line, term) {
-				parsed, err := data.ParseCard(line)
+				parsed, err := card.Parse(line)
 				check.PanicIf(err)
 				found[path] = append(found[path], *parsed)
 			}

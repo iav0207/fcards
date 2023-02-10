@@ -8,7 +8,6 @@ import (
 	"github.com/iav0207/fcards/internal/out"
 	fpx "github.com/yargevad/filepathx"
 	"os"
-	"strings"
 )
 
 var Home = os.Getenv("HOME")
@@ -30,24 +29,11 @@ func ReadCardsFromPath(filePath string) []card.Card {
 		if len(line) == 0 {
 			continue
 		}
-		parsed, err := ParseCard(line)
+		parsed, err := card.Parse(line)
 		check.FatalIf(err, "Failed to load the cards.")
 		cards = append(cards, *parsed)
 	}
 	return cards
-}
-
-func ParseCard(line string) (*card.Card, error) {
-	splitLine := strings.Split(line, "\t")
-	if len(splitLine) < 2 {
-		return nil, fmt.Errorf(`Expected every non-empty line to be a tab-separated pair: question and answer. Got: %s`, line)
-	}
-	question, answer := splitLine[0], splitLine[1]
-	comment := ""
-	if len(splitLine) > 2 {
-		comment = splitLine[2]
-	}
-	return card.New(question, answer, comment), nil
 }
 
 func LinesFrom(filePath string) chan string {

@@ -40,9 +40,10 @@ func edit(path string, c card.Card) {
 	a := defaultedInput("the new answer (card flip side)", c.Answer)
 	content := make([]string, 0)
 	updatedLines := 0
+	cRaw := c.String()
 	for line := range data.LinesFrom(path) {
-		if line == c.String() { // FIXME support comments
-			line = card.New(q, a, "").String()
+		if line == cRaw {
+			line = card.New(q, a, c.Comment).String()
 			updatedLines++
 		}
 		content = append(content, line)
