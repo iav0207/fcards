@@ -1,4 +1,4 @@
-package model
+package card
 
 import "strings"
 
@@ -6,12 +6,12 @@ type Card struct {
 	Question, Answer, Comment string
 }
 
-func NewCard(question, answer, comment string) *Card {
+func New(question, answer, comment string) *Card {
 	return &Card{question, answer, comment}
 }
 
 func (card Card) Copy() *Card {
-	return NewCard(card.Question, card.Answer, card.Comment)
+	return New(card.Question, card.Answer, card.Comment)
 }
 
 func (card *Card) Invert() {

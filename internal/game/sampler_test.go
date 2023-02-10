@@ -5,7 +5,8 @@ import (
 	"testing"
 
 	"fmt"
-	"github.com/iav0207/fcards/internal/model"
+	"github.com/iav0207/fcards/internal/model/card"
+	"github.com/iav0207/fcards/internal/model/mcard"
 )
 
 const testRandomSeed = 61409941995
@@ -33,7 +34,7 @@ func TestSampleGroupingDuplicatesCollapsed(t *testing.T) {
 
 func TestGroupingForOneQuestion(t *testing.T) {
 	SamplerService = createTestSampler(10)
-	cards := generateCards(5, func(i int) *model.Card {
+	cards := generateCards(5, func(i int) *card.Card {
 		c := cardNum(i)
 		c.Question = "same question"
 		return c
@@ -42,15 +43,15 @@ func TestGroupingForOneQuestion(t *testing.T) {
 	if len(sample) != 1 { // this test depends on the random seed
 		t.Errorf("Expected just one group, got %d", len(sample))
 	}
-	expected := []*model.MultiCard{
+	expected := []*mcard.MultiCard{
 		{
 			Question: "same question",
-			Cards: []model.Card{
-				*model.NewCard("same question", "a0", "c0"),
-				*model.NewCard("same question", "a1", "c1"),
-				*model.NewCard("same question", "a2", "c2"),
-				*model.NewCard("same question", "a3", "c3"),
-				*model.NewCard("same question", "a4", "c4"),
+			Cards: []card.Card{
+				*card.New("same question", "a0", "c0"),
+				*card.New("same question", "a1", "c1"),
+				*card.New("same question", "a2", "c2"),
+				*card.New("same question", "a3", "c3"),
+				*card.New("same question", "a4", "c4"),
 			},
 		},
 	}
@@ -61,7 +62,7 @@ func TestGroupingForOneQuestion(t *testing.T) {
 
 func TestGroupItemsAreUnique(t *testing.T) {
 	SamplerService = createTestSampler(10)
-	cards := generateCards(10, func(i int) *model.Card {
+	cards := generateCards(10, func(i int) *card.Card {
 		crComm := func() string {
 			if i%3 == 0 {
 				return "c" + toString(i%2)
@@ -69,28 +70,28 @@ func TestGroupItemsAreUnique(t *testing.T) {
 				return ""
 			}
 		}
-		return &model.Card{
+		return &card.Card{
 			Question: "q" + toString(i%2),
 			Answer:   "a" + toString(i%3),
 			Comment:  crComm(),
 		}
 	})
 	sample := RandomSampleOfMultiCardsFrom(cards)
-	expected := []*model.MultiCard{
+	expected := []*mcard.MultiCard{
 		{
 			Question: "q0",
-			Cards: []model.Card{
-				*model.NewCard("q0", "a0", "c0"),
-				*model.NewCard("q0", "a2", ""),
-				*model.NewCard("q0", "a1", ""),
+			Cards: []card.Card{
+				*card.New("q0", "a0", "c0"),
+				*card.New("q0", "a2", ""),
+				*card.New("q0", "a1", ""),
 			},
 		},
 		{
 			Question: "q1",
-			Cards: []model.Card{
-				*model.NewCard("q1", "a1", ""),
-				*model.NewCard("q1", "a0", "c1"),
-				*model.NewCard("q1", "a2", ""),
+			Cards: []card.Card{
+				*card.New("q1", "a1", ""),
+				*card.New("q1", "a0", "c1"),
+				*card.New("q1", "a2", ""),
 			},
 		},
 	}
@@ -103,22 +104,22 @@ func createTestSampler(sizeLimit int) sampler {
 	return sampler{sizeLimit, testRandomSeed}
 }
 
-func generateUniqueCards(count int) []model.Card {
-	var generate = func(i int) *model.Card { return cardNum(i) }
+func generateUniqueCards(count int) []card.Card {
+	var generate = func(i int) *card.Card { return cardNum(i) }
 	return generateCards(count, generate)
 }
 
-func generateCards(count int, generate func(int) *model.Card) []model.Card {
-	cards := make([]model.Card, count)
+func generateCards(count int, generate func(int) *card.Card) []card.Card {
+	cards := make([]card.Card, count)
 	for i := 0; i < count; i++ {
 		cards[i] = *generate(i)
 	}
 	return cards
 }
 
-func cardNum(num int) *model.Card {
+func cardNum(num int) *card.Card {
 	id := toString(num)
-	return model.NewCard("q"+id, "a"+id, "c"+id)
+	return card.New("q"+id, "a"+id, "c"+id)
 }
 
 func toString(n int) string {

@@ -6,11 +6,12 @@ import (
 
 	. "github.com/iav0207/fcards/internal"
 	"github.com/iav0207/fcards/internal/flags"
-	"github.com/iav0207/fcards/internal/model"
+	"github.com/iav0207/fcards/internal/model/card"
+	"github.com/iav0207/fcards/internal/model/mcard"
 )
 
 type Sampler interface {
-	RandomSampleOfMultiCardsFrom(cards []model.Card) []*model.MultiCard
+	RandomSampleOfMultiCardsFrom(cards []card.Card) []*mcard.MultiCard
 }
 
 type sampler struct {
@@ -23,11 +24,11 @@ var SamplerService = sampler{
 	randomSeed: time.Now().UnixNano(),
 }
 
-func RandomSampleOfMultiCardsFrom(cards []model.Card) []*model.MultiCard {
+func RandomSampleOfMultiCardsFrom(cards []card.Card) []*mcard.MultiCard {
 	return SamplerService.RandomSampleOfMultiCardsFrom(cards)
 }
 
-func (s sampler) RandomSampleOfMultiCardsFrom(cards []model.Card) []*model.MultiCard {
+func (s sampler) RandomSampleOfMultiCardsFrom(cards []card.Card) []*mcard.MultiCard {
 	var mcDirect index = createIndex(cards)
 	var mcInverse index = createIndex(invert(cards))
 
@@ -39,9 +40,9 @@ func (s sampler) RandomSampleOfMultiCardsFrom(cards []model.Card) []*model.Multi
 	var keyPool []directedQuestion = append(keysDirect, keysInverse...)
 	s.shuffleQuestions(keyPool)
 	keyPool = keyPool[:limit]
-	sample := make([]*model.MultiCard, 0, limit)
+	sample := make([]*mcard.MultiCard, 0, limit)
 	for _, key := range keyPool {
-		var mCard model.MultiCard
+		var mCard mcard.MultiCard
 		if key.direc == flags.Straight {
 			mCard = *mcDirect[key.question]
 		} else {
@@ -55,17 +56,17 @@ func (s sampler) RandomSampleOfMultiCardsFrom(cards []model.Card) []*model.Multi
 	return sample
 }
 
-type index = map[string]*model.MultiCard
+type index = map[string]*mcard.MultiCard
 
-func createIndex(cards []model.Card) index {
-	return model.IndexMultiCards(model.ToMultiCards(cards))
+func createIndex(cards []card.Card) index {
+	return mcard.IndexMultiCards(mcard.ToMultiCards(cards))
 }
 
-func invert(cards []model.Card) []model.Card {
-	inverted := make([]model.Card, 0, len(cards))
-	for _, card := range cards {
-		card.Invert()
-		inverted = append(inverted, card)
+func invert(cards []card.Card) []card.Card {
+	inverted := make([]card.Card, 0, len(cards))
+	for _, c := range cards {
+		c.Invert()
+		inverted = append(inverted, c)
 	}
 	return inverted
 }

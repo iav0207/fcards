@@ -2,23 +2,24 @@ package game
 
 import (
 	. "github.com/iav0207/fcards/internal"
-	"github.com/iav0207/fcards/internal/model"
+	"github.com/iav0207/fcards/internal/model/card"
+	"github.com/iav0207/fcards/internal/model/mcard"
 )
 
-func Evaluate(multicard model.MultiCard, response string) Scored {
+func Evaluate(multicard mcard.MultiCard, response string) Scored {
 	return Evaluator.Score(multicard, response)
 }
 
 type responseEvaluator interface {
-	Score(multicard model.MultiCard, response string) scoredResponse
+	Score(multicard mcard.MultiCard, response string) scoredResponse
 }
 
 type Scored interface {
-	MultiCard() model.MultiCard
+	MultiCard() mcard.MultiCard
 	MissScore() int
 	Expected() string
 	Actual() string
-	Alternatives() []model.Card
+	Alternatives() []card.Card
 }
 
 type evaluator struct{}
@@ -26,11 +27,11 @@ type evaluator struct{}
 var Evaluator responseEvaluator = evaluator{}
 
 // TODO score | assessment -> grade
-func (ev evaluator) Score(multicard model.MultiCard, response string) scoredResponse {
+func (ev evaluator) Score(multicard mcard.MultiCard, response string) scoredResponse {
 	initMissScore := LevenshteinDistance(response, multicard.Cards[0].Answer)
 	ret := scoredResponse{multicard, response, 0, initMissScore}
-	for i, card := range multicard.Cards {
-		score := LevenshteinDistance(response, card.Answer)
+	for i, c := range multicard.Cards {
+		score := LevenshteinDistance(response, c.Answer)
 		if score < ret.missScore {
 			ret.bestMatchIdx = i
 			ret.missScore = score
@@ -40,13 +41,13 @@ func (ev evaluator) Score(multicard model.MultiCard, response string) scoredResp
 }
 
 type scoredResponse struct {
-	multicard    model.MultiCard
+	multicard    mcard.MultiCard
 	response     string
 	bestMatchIdx int
 	missScore    int
 }
 
-func (sr scoredResponse) MultiCard() model.MultiCard {
+func (sr scoredResponse) MultiCard() mcard.MultiCard {
 	return sr.multicard
 }
 
@@ -62,11 +63,11 @@ func (sr scoredResponse) Actual() string {
 	return sr.response
 }
 
-func (sr scoredResponse) Alternatives() []model.Card {
-	alt := make([]model.Card, 0, len(sr.multicard.Cards)-1)
-	for i, card := range sr.multicard.Cards {
+func (sr scoredResponse) Alternatives() []card.Card {
+	alt := make([]card.Card, 0, len(sr.multicard.Cards)-1)
+	for i, c := range sr.multicard.Cards {
 		if i != sr.bestMatchIdx {
-			alt = append(alt, card)
+			alt = append(alt, c)
 		}
 	}
 	return alt

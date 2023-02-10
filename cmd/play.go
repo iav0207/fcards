@@ -7,7 +7,8 @@ import (
 	. "github.com/iav0207/fcards/internal"
 	"github.com/iav0207/fcards/internal/flags"
 	"github.com/iav0207/fcards/internal/game"
-	"github.com/iav0207/fcards/internal/model"
+	"github.com/iav0207/fcards/internal/model/card"
+	"github.com/iav0207/fcards/internal/model/mcard"
 
 	"github.com/spf13/cobra"
 )
@@ -48,7 +49,7 @@ func argsOrAllTsvPaths(args []string) []string {
 	return AllTsvPaths()
 }
 
-func exitIfEmpty(cards []model.Card) {
+func exitIfEmpty(cards []card.Card) {
 	if len(cards) == 0 {
 		Log.Println("Well, no game this time.")
 		os.Exit(0)
@@ -56,8 +57,8 @@ func exitIfEmpty(cards []model.Card) {
 }
 
 // Plays a round with given cards and returns those which were given wrong answers to.
-func playRound(multicards []*model.MultiCard) []*model.MultiCard {
-	wrongAnswered := make([]*model.MultiCard, 0)
+func playRound(multicards []*mcard.MultiCard) []*mcard.MultiCard {
+	wrongAnswered := make([]*mcard.MultiCard, 0)
 
 	for _, mCard := range multicards {
 		Log.Println("")
@@ -90,9 +91,9 @@ func printGrade(sr game.Scored) {
 	}
 }
 
-func answerWithComment(card model.Card) string {
-	if IsBlank(card.Comment) {
-		return card.Answer
+func answerWithComment(crd card.Card) string {
+	if IsBlank(crd.Comment) {
+		return crd.Answer
 	}
-	return fmt.Sprintf("%s (%s)", card.Answer, card.Comment)
+	return fmt.Sprintf("%s (%s)", crd.Answer, crd.Comment)
 }

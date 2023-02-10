@@ -3,7 +3,7 @@ package internal
 import (
 	"bufio"
 	"fmt"
-	"github.com/iav0207/fcards/internal/model"
+	"github.com/iav0207/fcards/internal/model/card"
 	fpx "github.com/yargevad/filepathx"
 	"os"
 	s "strings"
@@ -13,8 +13,8 @@ var Home = os.Getenv("HOME")
 var DefaultTsvFilesPattern = fmt.Sprintf("%s/.fcards/tsv/**/*.tsv", Home)
 var AllTsvPaths = func() []string { return Glob(DefaultTsvFilesPattern) }
 
-func ReadCardsFromPaths(paths []string) []model.Card {
-	cards := make([]model.Card, 0)
+func ReadCardsFromPaths(paths []string) []card.Card {
+	cards := make([]card.Card, 0)
 	for _, filePath := range paths {
 		Log.Printf("Reading cards from file %s\n", filePath)
 		cards = append(cards, ReadCardsFromPath(filePath)...)
@@ -22,8 +22,8 @@ func ReadCardsFromPaths(paths []string) []model.Card {
 	return cards
 }
 
-func ReadCardsFromPath(filePath string) []model.Card {
-	cards := make([]model.Card, 0)
+func ReadCardsFromPath(filePath string) []card.Card {
+	cards := make([]card.Card, 0)
 	for line := range LinesFrom(filePath) {
 		if len(line) == 0 {
 			continue
@@ -35,7 +35,7 @@ func ReadCardsFromPath(filePath string) []model.Card {
 	return cards
 }
 
-func ParseCard(line string) (*model.Card, error) {
+func ParseCard(line string) (*card.Card, error) {
 	splitLine := s.Split(line, "\t")
 	if len(splitLine) < 2 {
 		return nil, fmt.Errorf(`Expected every non-empty line to be a tab-separated pair: question and answer. Got: %s`, line)
@@ -45,7 +45,7 @@ func ParseCard(line string) (*model.Card, error) {
 	if len(splitLine) > 2 {
 		comment = splitLine[2]
 	}
-	return model.NewCard(question, answer, comment), nil
+	return card.New(question, answer, comment), nil
 }
 
 func LinesFrom(filePath string) chan string {

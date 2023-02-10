@@ -2,9 +2,9 @@ package cmd
 
 import (
 	. "github.com/iav0207/fcards/internal"
-	"github.com/iav0207/fcards/internal/model"
+	"github.com/iav0207/fcards/internal/model/card"
 	"github.com/spf13/cobra"
-	str "strings"
+	"strings"
 )
 
 var addCmd = &cobra.Command{
@@ -26,12 +26,12 @@ func runAdd(cmd *cobra.Command, args []string) {
 	a := validated(posArgOrUserResponse(args, 1, "Please enter the answer (card flip side):"))
 	path := posArgOrSelection(args, 2, "Where to put it? (file path)", AllTsvPaths())
 
-	card := model.NewCard(q, a, "")
+	card := card.New(q, a, "")
 	AppendToFile(path, card.String())
 }
 
 func validated(s string) string {
-	Require(!str.ContainsAny(s, "\t\r\n"), "Tabs and line breaks are not allowed")
+	Require(!strings.ContainsAny(s, "\t\r\n"), "Tabs and line breaks are not allowed")
 	return s
 }
 

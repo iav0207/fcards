@@ -2,7 +2,7 @@ package cmd
 
 import (
 	. "github.com/iav0207/fcards/internal"
-	"github.com/iav0207/fcards/internal/model"
+	"github.com/iav0207/fcards/internal/model/card"
 	"github.com/spf13/cobra"
 	str "strings"
 )
@@ -18,7 +18,7 @@ func init() {
 	rootCmd.AddCommand(findCmd)
 }
 
-func runFindReturnFound(args []string) map[string][]model.Card {
+func runFindReturnFound(args []string) map[string][]card.Card {
 	Require(len(args) > 0, "Must provide at least one argument - search term.")
 	term := str.Join(args, " ")
 	found := find(term)
@@ -27,8 +27,8 @@ func runFindReturnFound(args []string) map[string][]model.Card {
 	return found
 }
 
-func find(term string) map[string][]model.Card {
-	found := make(map[string][]model.Card)
+func find(term string) map[string][]card.Card {
+	found := make(map[string][]card.Card)
 	for _, path := range AllTsvPaths() {
 		for line := range LinesFrom(path) {
 			if str.Contains(line, term) {
@@ -41,7 +41,7 @@ func find(term string) map[string][]model.Card {
 	return found
 }
 
-func countValues(m map[string][]model.Card) int {
+func countValues(m map[string][]card.Card) int {
 	count := 0
 	for _, cards := range m {
 		count += len(cards)
@@ -49,10 +49,10 @@ func countValues(m map[string][]model.Card) int {
 	return count
 }
 
-func printOut(occurrences map[string][]model.Card) {
+func printOut(occurrences map[string][]card.Card) {
 	for path, cards := range occurrences {
-		for _, card := range cards {
-			Log.Println(TabSeparated(path, card.Question, card.Answer))
+		for _, c := range cards {
+			Log.Println(TabSeparated(path, c.Question, c.Answer))
 		}
 	}
 }

@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 	. "github.com/iav0207/fcards/internal"
-	"github.com/iav0207/fcards/internal/model"
+	"github.com/iav0207/fcards/internal/model/card"
 	"github.com/spf13/cobra"
 )
 
@@ -32,14 +32,14 @@ func runEdit(cmd *cobra.Command, args []string) {
 	}
 }
 
-func edit(path string, card model.Card) {
-	q := defaultedInput("the new question (card front side)", card.Question)
-	a := defaultedInput("the new answer (card flip side)", card.Answer)
+func edit(path string, c card.Card) {
+	q := defaultedInput("the new question (card front side)", c.Question)
+	a := defaultedInput("the new answer (card flip side)", c.Answer)
 	content := make([]string, 0)
 	updatedLines := 0
 	for line := range LinesFrom(path) {
-		if line == card.String() { // FIXME support comments
-			line = model.NewCard(q, a, "").String()
+		if line == c.String() { // FIXME support comments
+			line = card.New(q, a, "").String()
 			updatedLines++
 		}
 		content = append(content, line)
@@ -58,7 +58,7 @@ func defaultedInput(ofWhat, defaultValue string) string {
 	return input
 }
 
-func firstCard(m map[string][]model.Card) (string, model.Card) {
+func firstCard(m map[string][]card.Card) (string, card.Card) {
 	for k, v := range m {
 		return k, v[0]
 	}
