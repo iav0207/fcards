@@ -2,8 +2,11 @@ package cmd
 
 import (
 	"fmt"
-	. "github.com/iav0207/fcards/internal"
+	"github.com/iav0207/fcards/internal/check"
+	"github.com/iav0207/fcards/internal/data"
+	"github.com/iav0207/fcards/internal/in"
 	"github.com/iav0207/fcards/internal/model/card"
+	"github.com/iav0207/fcards/internal/text"
 	"github.com/spf13/cobra"
 )
 
@@ -22,12 +25,12 @@ func init() {
 
 func runEdit(cmd *cobra.Command, args []string) {
 	found := runFindReturnFound(args)
-	Assert(len(found) > 0)
-	Require(countValues(found) == 1, "More than one occurrence found. Please make the request more specific")
+	check.Assert(len(found) > 0)
+	check.Require(countValues(found) == 1, "More than one occurrence found. Please make the request more specific")
 
 	path, card := firstCard(found)
 
-	if UserConfirms("Do you want to edit the found card?") {
+	if in.UserConfirms("Do you want to edit the found card?") {
 		edit(path, card)
 	}
 }
@@ -37,22 +40,22 @@ func edit(path string, c card.Card) {
 	a := defaultedInput("the new answer (card flip side)", c.Answer)
 	content := make([]string, 0)
 	updatedLines := 0
-	for line := range LinesFrom(path) {
+	for line := range data.LinesFrom(path) {
 		if line == c.String() { // FIXME support comments
 			line = card.New(q, a, "").String()
 			updatedLines++
 		}
 		content = append(content, line)
 	}
-	Assert(updatedLines == 1, "Expected to update one line, was about to update", updatedLines)
-	OverwriteFileWithLines(path, content)
+	check.Assert(updatedLines == 1, "Expected to update one line, was about to update", updatedLines)
+	data.OverwriteFileWithLines(path, content)
 }
 
 func defaultedInput(ofWhat, defaultValue string) string {
 	promptFmt := "Please enter %s below. Leave blank to keep it as is."
 	prompt := fmt.Sprintf(promptFmt, ofWhat)
-	input := UserResponse(prompt)
-	if IsBlank(input) {
+	input := in.UserResponse(prompt)
+	if text.IsBlank(input) {
 		return defaultValue
 	}
 	return input

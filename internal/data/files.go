@@ -1,12 +1,14 @@
-package internal
+package data
 
 import (
 	"bufio"
 	"fmt"
+	"github.com/iav0207/fcards/internal/check"
 	"github.com/iav0207/fcards/internal/model/card"
+	"github.com/iav0207/fcards/internal/out"
 	fpx "github.com/yargevad/filepathx"
 	"os"
-	s "strings"
+	"strings"
 )
 
 var Home = os.Getenv("HOME")
@@ -16,7 +18,7 @@ var AllTsvPaths = func() []string { return Glob(DefaultTsvFilesPattern) }
 func ReadCardsFromPaths(paths []string) []card.Card {
 	cards := make([]card.Card, 0)
 	for _, filePath := range paths {
-		Log.Printf("Reading cards from file %s\n", filePath)
+		out.Log.Printf("Reading cards from file %s\n", filePath)
 		cards = append(cards, ReadCardsFromPath(filePath)...)
 	}
 	return cards
@@ -29,14 +31,14 @@ func ReadCardsFromPath(filePath string) []card.Card {
 			continue
 		}
 		parsed, err := ParseCard(line)
-		FatalIf(err, "Failed to load the cards.")
+		check.FatalIf(err, "Failed to load the cards.")
 		cards = append(cards, *parsed)
 	}
 	return cards
 }
 
 func ParseCard(line string) (*card.Card, error) {
-	splitLine := s.Split(line, "\t")
+	splitLine := strings.Split(line, "\t")
 	if len(splitLine) < 2 {
 		return nil, fmt.Errorf(`Expected every non-empty line to be a tab-separated pair: question and answer. Got: %s`, line)
 	}
@@ -50,7 +52,7 @@ func ParseCard(line string) (*card.Card, error) {
 
 func LinesFrom(filePath string) chan string {
 	file, err := os.Open(filePath)
-	PanicIf(err)
+	check.PanicIf(err)
 	sc := bufio.NewScanner(file)
 	sc.Split(bufio.ScanLines)
 	c := make(chan string)
@@ -66,7 +68,7 @@ func LinesFrom(filePath string) chan string {
 
 func OverwriteFileWithLines(path string, lines []string) {
 	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
-	PanicIf(err)
+	check.PanicIf(err)
 	defer file.Close()
 	for _, line := range lines {
 		file.WriteString(line + "\n")
@@ -75,7 +77,7 @@ func OverwriteFileWithLines(path string, lines []string) {
 
 func AppendToFile(path string, lines ...string) {
 	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	FatalIf(err, "Could not open the file")
+	check.FatalIf(err, "Could not open the file")
 	defer file.Close()
 	for _, line := range lines {
 		file.WriteString(line + "\n")
@@ -84,6 +86,6 @@ func AppendToFile(path string, lines ...string) {
 
 func Glob(glob string) []string {
 	paths, err := fpx.Glob(glob)
-	PanicIf(err)
+	check.PanicIf(err)
 	return paths
 }

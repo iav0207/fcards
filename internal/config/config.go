@@ -1,6 +1,6 @@
-package internal
+package config
 
-func GetConfig() Config {
+func Get() Config {
 	return cfg
 }
 

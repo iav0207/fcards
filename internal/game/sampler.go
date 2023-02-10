@@ -4,10 +4,12 @@ import (
 	"math/rand"
 	"time"
 
-	. "github.com/iav0207/fcards/internal"
+	"github.com/iav0207/fcards/internal/check"
+	"github.com/iav0207/fcards/internal/config"
 	"github.com/iav0207/fcards/internal/flags"
 	"github.com/iav0207/fcards/internal/model/card"
 	"github.com/iav0207/fcards/internal/model/mcard"
+	"github.com/iav0207/fcards/internal/out"
 )
 
 type Sampler interface {
@@ -20,7 +22,7 @@ type sampler struct {
 }
 
 var SamplerService = sampler{
-	sizeLimit:  GetConfig().GameDeckSize,
+	sizeLimit:  config.Get().GameDeckSize,
 	randomSeed: time.Now().UnixNano(),
 }
 
@@ -51,7 +53,7 @@ func (s sampler) RandomSampleOfMultiCardsFrom(cards []card.Card) []*mcard.MultiC
 		sample = append(sample, &mCard)
 	}
 	if len(sample) != len(cards) {
-		Log.Println("Took a random sample of", len(sample), "cards")
+		out.Log.Println("Took a random sample of", len(sample), "cards")
 	}
 	return sample
 }
@@ -102,7 +104,7 @@ func (s sampler) shuffleQuestions(questions []directedQuestion) {
 }
 
 func min(items ...int) int {
-	Assert(len(items) > 0)
+	check.Assert(len(items) > 0)
 	ret := items[0]
 	for i := 1; i < len(items); i++ {
 		if items[i] < ret {

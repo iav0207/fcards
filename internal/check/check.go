@@ -1,9 +1,11 @@
-package internal
+package check
+
+import "github.com/iav0207/fcards/internal/out"
 
 // Assert on a technical constraint (a failure means a bug / logical inconsistency).
 func Assert(condition bool, optionalMsg ...any) {
 	if !condition {
-		Log.Panicln(optionalMsg...)
+		out.Log.Panicln(optionalMsg...)
 	}
 }
 
@@ -12,7 +14,7 @@ func Assert(condition bool, optionalMsg ...any) {
 // or the data.
 func Require(condition bool, fmt string, optionalArgs ...any) {
 	if !condition {
-		Log.Fatalf(fmt, optionalArgs...)
+		out.Log.Fatalf(fmt, optionalArgs...)
 	}
 }
 
@@ -24,6 +26,6 @@ func PanicIf(err error) {
 
 func FatalIf(err error, msg string) {
 	if err != nil {
-		Log.Fatalln(msg, err)
+		out.Log.Fatalln(msg, err)
 	}
 }

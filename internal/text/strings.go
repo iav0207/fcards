@@ -1,8 +1,7 @@
-package internal
+package text
 
 import (
 	"github.com/texttheater/golang-levenshtein/levenshtein"
-	"runtime"
 	"strings"
 )
 
@@ -17,16 +16,4 @@ func TabSeparated(values ...string) string {
 
 func IsBlank(s string) bool {
 	return len(strings.TrimSpace(s)) == 0
-}
-
-func trimRightLineBreak(s string) string {
-	return strings.TrimRight(s, lineBreak())
-}
-
-func lineBreak() string {
-	if runtime.GOOS == "windows" {
-		return "\r\n"
-	} else {
-		return "\n"
-	}
 }

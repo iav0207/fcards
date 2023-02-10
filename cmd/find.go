@@ -1,10 +1,13 @@
 package cmd
 
 import (
-	. "github.com/iav0207/fcards/internal"
+	"github.com/iav0207/fcards/internal/check"
+	"github.com/iav0207/fcards/internal/data"
 	"github.com/iav0207/fcards/internal/model/card"
+	"github.com/iav0207/fcards/internal/out"
+	"github.com/iav0207/fcards/internal/text"
 	"github.com/spf13/cobra"
-	str "strings"
+	"strings"
 )
 
 var findCmd = &cobra.Command{
@@ -19,21 +22,21 @@ func init() {
 }
 
 func runFindReturnFound(args []string) map[string][]card.Card {
-	Require(len(args) > 0, "Must provide at least one argument - search term.")
-	term := str.Join(args, " ")
+	check.Require(len(args) > 0, "Must provide at least one argument - search term.")
+	term := strings.Join(args, " ")
 	found := find(term)
-	Require(countValues(found) > 0, "Term '%s' is not found among %s", term, DefaultTsvFilesPattern)
+	check.Require(countValues(found) > 0, "Term '%s' is not found among %s", term, data.DefaultTsvFilesPattern)
 	printOut(found)
 	return found
 }
 
 func find(term string) map[string][]card.Card {
 	found := make(map[string][]card.Card)
-	for _, path := range AllTsvPaths() {
-		for line := range LinesFrom(path) {
-			if str.Contains(line, term) {
-				parsed, err := ParseCard(line)
-				PanicIf(err)
+	for _, path := range data.AllTsvPaths() {
+		for line := range data.LinesFrom(path) {
+			if strings.Contains(line, term) {
+				parsed, err := data.ParseCard(line)
+				check.PanicIf(err)
 				found[path] = append(found[path], *parsed)
 			}
 		}
@@ -52,7 +55,7 @@ func countValues(m map[string][]card.Card) int {
 func printOut(occurrences map[string][]card.Card) {
 	for path, cards := range occurrences {
 		for _, c := range cards {
-			Log.Println(TabSeparated(path, c.Question, c.Answer))
+			out.Log.Println(text.TabSeparated(path, c.Question, c.Answer))
 		}
 	}
 }

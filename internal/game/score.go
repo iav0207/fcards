@@ -1,9 +1,9 @@
 package game
 
 import (
-	. "github.com/iav0207/fcards/internal"
 	"github.com/iav0207/fcards/internal/model/card"
 	"github.com/iav0207/fcards/internal/model/mcard"
+	"github.com/iav0207/fcards/internal/text"
 )
 
 func Evaluate(multicard mcard.MultiCard, response string) Scored {
@@ -28,10 +28,10 @@ var Evaluator responseEvaluator = evaluator{}
 
 // TODO score | assessment -> grade
 func (ev evaluator) Score(multicard mcard.MultiCard, response string) scoredResponse {
-	initMissScore := LevenshteinDistance(response, multicard.Cards[0].Answer)
+	initMissScore := text.LevenshteinDistance(response, multicard.Cards[0].Answer)
 	ret := scoredResponse{multicard, response, 0, initMissScore}
 	for i, c := range multicard.Cards {
-		score := LevenshteinDistance(response, c.Answer)
+		score := text.LevenshteinDistance(response, c.Answer)
 		if score < ret.missScore {
 			ret.bestMatchIdx = i
 			ret.missScore = score
