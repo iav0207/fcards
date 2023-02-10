@@ -25,7 +25,7 @@ var playCmd = &cobra.Command{
 	Run:   runPlay,
 }
 
-var direc flags.Direction = flags.Straight
+var direc flags.Direction = flags.Random
 
 func init() {
 	rootCmd.AddCommand(playCmd)
