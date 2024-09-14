@@ -38,7 +38,7 @@ use_cards_from: # this should be a command of the tool itself
 ifndef path
 	$(error path argument `path` is undefined)
 endif
-	rm -r $(tsv_folder_backup) || true
+	rm -r $(tsv_folder_backup) 2>/dev/null || true
 	mv $(tsv_folder) $(tsv_folder_backup)
 	ln -sfF $(path) $(tsv_folder)
 

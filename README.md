@@ -17,7 +17,7 @@ Key features inlcude:
 
 ## Installation
 
-Assuming you have Go installed and `$GOPATH` configured, you just need to run
+Assuming you have Go installed and Go binaries are on your `$PATH`, you just need to run
 
 ```bash
 make install
