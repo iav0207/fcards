@@ -1,12 +1,11 @@
 package game
 
 import (
+	"fmt"
 	"math/rand"
 	"testing"
 
-	"github.com/go-test/deep"
-
-	"fmt"
+	"github.com/google/go-cmp/cmp"
 
 	"github.com/iav0207/fcards/internal/flags"
 	"github.com/iav0207/fcards/internal/model/card"
@@ -17,140 +16,155 @@ const testRandomSeed = 61409941995
 
 func testRandom() rand.Rand { return *rand.New(rand.NewSource(testRandomSeed)) }
 
-func TestSampleShouldHaveExpectedSize(t *testing.T) {
-	expected := 3
-	sampler := createTestSampler(expected)
-	actual := len(sampler.RandomSampleOfMultiCardsFrom(generateUniqueCards(7)))
-	if actual != expected {
-		t.Errorf("len(sample) = %d, expected %d", actual, expected)
-	}
-}
-
-func TestSampleGroupingDuplicatesCollapsed(t *testing.T) {
-	sampler := createTestSampler(20)
-	expectedCount := 5
-	cards := generateUniqueCards(expectedCount)
-	cards = append(cards, cards...)
-	cards = append(cards, cards[0])
-	sample := sampler.RandomSampleOfMultiCardsFrom(cards)
-	if len(sample) != expectedCount {
-		t.Errorf("Expected %d groups only, got %d", expectedCount, len(sample))
-	}
-}
-
-func TestGroupingForOneQuestion(t *testing.T) {
-	sampler := &Sampler{
-		sizeLimit: 10,
-		direc:     flags.Straight,
-		random:    testRandom(),
-	}
-	cards := generateCards(5, func(i int) *card.Card {
-		c := cardNum(i)
-		c.Question = "same question"
-		return c
-	})
-	sample := sampler.RandomSampleOfMultiCardsFrom(cards)
-	if len(sample) != 1 { // this test depends on the random seed
-		t.Errorf("Expected just one group, got %d", len(sample))
-	}
-	expected := []*mcard.MultiCard{
-		{
-			Question: "same question",
-			Cards: []card.Card{
-				*card.New("same question", "a0", "c0"),
-				*card.New("same question", "a1", "c1"),
-				*card.New("same question", "a2", "c2"),
-				*card.New("same question", "a3", "c3"),
-				*card.New("same question", "a4", "c4"),
-			},
-		},
-	}
-	if diff := deep.Equal(sample, expected); diff != nil {
-		t.Error(diff)
-	}
-}
-
-func TestGroupItemsAreUnique(t *testing.T) {
-	sampler := &Sampler{
-		sizeLimit: 10,
-		direc:     flags.Straight,
-		random:    testRandom(),
-	}
-	cards := generateCards(10, func(i int) *card.Card {
-		crComm := func() string {
-			if i%3 == 0 {
-				return "c" + toString(i%2)
-			} else {
-				return ""
-			}
+func TestSampler(t *testing.T) {
+	t.Run("sample_size", func(t *testing.T) {
+		want := 3
+		sampler := &Sampler{
+			sizeLimit: want,
+			direc:     flags.Random,
+			random:    testRandom(),
 		}
-		return &card.Card{
-			Question: "q" + toString(i%2),
-			Answer:   "a" + toString(i%3),
-			Comment:  crComm(),
+		got := len(sampler.RandomSampleOfMultiCardsFrom(generateUniqueCards(7)))
+		if got != want {
+			t.Errorf("len(sample) = %d, want %d", got, want)
 		}
 	})
-	sample := sampler.RandomSampleOfMultiCardsFrom(cards)
-	expected := []*mcard.MultiCard{
-		{
-			Question: "q0",
-			Cards: []card.Card{
-				*card.New("q0", "a0", "c0"),
-				*card.New("q0", "a2", ""),
-				*card.New("q0", "a1", ""),
-			},
-		},
-		{
-			Question: "q1",
-			Cards: []card.Card{
-				*card.New("q1", "a1", ""),
-				*card.New("q1", "a0", "c1"),
-				*card.New("q1", "a2", ""),
-			},
-		},
-	}
-	if diff := deep.Equal(sample, expected); diff != nil {
-		t.Error(diff)
-	}
-}
 
-func TestStraightDirectionSampling(t *testing.T) {
-	sampler := &Sampler{
-		sizeLimit: 10,
-		direc:     flags.Straight,
-		random:    *rand.New(rand.NewSource(testRandomSeed)),
-	}
-	cards := generateCards(10, func(i int) *card.Card {
-		return &card.Card{
-			Question: "q" + toString(i),
-			Answer:   "a" + toString(i),
-			Comment:  "",
+	t.Run("grouping", func(t *testing.T) {
+		for _, tc := range []struct {
+			name    string
+			sampler *Sampler
+			given   []card.Card
+			want    []*mcard.MultiCard
+		}{
+			{
+				name: "same_question",
+				sampler: &Sampler{
+					sizeLimit: 10,
+					direc:     flags.Straight,
+					random:    testRandom(),
+				},
+				given: generateCards(5, func(i int) *card.Card {
+					c := cardNum(i)
+					c.Question = "same question"
+					return c
+				}),
+				want: []*mcard.MultiCard{
+					{
+						Question: "same question",
+						Cards: []card.Card{
+							*card.New("same question", "a0", "c0"),
+							*card.New("same question", "a1", "c1"),
+							*card.New("same question", "a2", "c2"),
+							*card.New("same question", "a3", "c3"),
+							*card.New("same question", "a4", "c4"),
+						},
+					},
+				},
+			},
+			{
+				name: "deduplication",
+				sampler: &Sampler{
+					sizeLimit: 100,
+					direc:     flags.Straight,
+					random:    testRandom(),
+				},
+				given: []card.Card{
+					*card.New("q1", "a1", "c1"),
+					*card.New("q2", "a2", "c2"),
+					*card.New("q3", "a3", "c3"),
+					*card.New("q4", "a4", "c4"),
+					*card.New("q5", "a5", "c5"),
+
+					*card.New("q2", "a2", "c2"),
+					*card.New("q3", "a3", "c3"),
+
+					*card.New("q2", "a2", "c2"),
+					*card.New("q2", "a2", ""),
+					*card.New("q2", "a2*", "c2*"),
+				},
+				want: []*mcard.MultiCard{
+					{Question: "q1", Cards: []card.Card{*card.New("q1", "a1", "c1")}},
+					{Question: "q5", Cards: []card.Card{*card.New("q5", "a5", "c5")}},
+					{Question: "q2", Cards: []card.Card{
+						*card.New("q2", "a2", "c2"),
+						*card.New("q2", "a2", ""),
+						*card.New("q2", "a2*", "c2*"),
+					}},
+					{Question: "q4", Cards: []card.Card{*card.New("q4", "a4", "c4")}},
+					{Question: "q3", Cards: []card.Card{*card.New("q3", "a3", "c3")}},
+				},
+			},
+			{
+				name: "group_items_are_unique",
+				sampler: &Sampler{
+					sizeLimit: 10,
+					direc:     flags.Straight,
+					random:    testRandom(),
+				},
+				given: generateCards(10, func(i int) *card.Card {
+					crComm := func() string {
+						if i%3 == 0 {
+							return "c" + toString(i%2)
+						} else {
+							return ""
+						}
+					}
+					return &card.Card{
+						Question: "q" + toString(i%2),
+						Answer:   "a" + toString(i%3),
+						Comment:  crComm(),
+					}
+				}),
+				want: []*mcard.MultiCard{
+					{
+						Question: "q0",
+						Cards: []card.Card{
+							*card.New("q0", "a0", "c0"),
+							*card.New("q0", "a2", ""),
+							*card.New("q0", "a1", ""),
+						},
+					},
+					{
+						Question: "q1",
+						Cards: []card.Card{
+							*card.New("q1", "a1", ""),
+							*card.New("q1", "a0", "c1"),
+							*card.New("q1", "a2", ""),
+						},
+					},
+				},
+			},
+			{
+				name: "sample_straight",
+				sampler: &Sampler{
+					sizeLimit: 10,
+					direc:     flags.Straight,
+					random:    *rand.New(rand.NewSource(testRandomSeed)),
+				},
+				given: generateUniqueCards(10),
+				want: []*mcard.MultiCard{
+					{Question: "q2", Cards: []card.Card{*cardNum(2)}},
+					{Question: "q1", Cards: []card.Card{*cardNum(1)}},
+					{Question: "q7", Cards: []card.Card{*cardNum(7)}},
+					{Question: "q9", Cards: []card.Card{*cardNum(9)}},
+					{Question: "q3", Cards: []card.Card{*cardNum(3)}},
+					{Question: "q0", Cards: []card.Card{*cardNum(0)}},
+					{Question: "q6", Cards: []card.Card{*cardNum(6)}},
+					{Question: "q4", Cards: []card.Card{*cardNum(4)}},
+					{Question: "q8", Cards: []card.Card{*cardNum(8)}},
+					{Question: "q5", Cards: []card.Card{*cardNum(5)}},
+				},
+			},
+		} {
+			t.Run(tc.name, func(t *testing.T) {
+				got := tc.sampler.RandomSampleOfMultiCardsFrom(tc.given)
+				if diff := cmp.Diff(got, tc.want); diff != "" {
+					t.Error("sampler.RandomSampleOfMultiCardsFrom(cards) result differs (-got, +want):\n" + diff)
+				}
+			})
 		}
 	})
-	sample := sampler.RandomSampleOfMultiCardsFrom(cards)
-	expected := []*mcard.MultiCard{
-		{Question: "q2", Cards: []card.Card{*card.New("q2", "a2", "")}},
-		{Question: "q1", Cards: []card.Card{*card.New("q1", "a1", "")}},
-		{Question: "q7", Cards: []card.Card{*card.New("q7", "a7", "")}},
-		{Question: "q9", Cards: []card.Card{*card.New("q9", "a9", "")}},
-		{Question: "q3", Cards: []card.Card{*card.New("q3", "a3", "")}},
-		{Question: "q0", Cards: []card.Card{*card.New("q0", "a0", "")}},
-		{Question: "q6", Cards: []card.Card{*card.New("q6", "a6", "")}},
-		{Question: "q4", Cards: []card.Card{*card.New("q4", "a4", "")}},
-		{Question: "q8", Cards: []card.Card{*card.New("q8", "a8", "")}},
-		{Question: "q5", Cards: []card.Card{*card.New("q5", "a5", "")}},
-	}
-	if diff := deep.Equal(sample, expected); diff != nil {
-		t.Error(diff)
-	}
-}
-
-func createTestSampler(sizeLimit int) *Sampler {
-	return &Sampler{
-		sizeLimit: sizeLimit,
-		direc:     flags.Random,
-		random:    testRandom(),
-	}
 }
 
 func generateUniqueCards(count int) []card.Card {
@@ -171,6 +185,4 @@ func cardNum(num int) *card.Card {
 	return card.New("q"+id, "a"+id, "c"+id)
 }
 
-func toString(n int) string {
-	return fmt.Sprint(n)
-}
+func toString(n int) string { return fmt.Sprint(n) }
