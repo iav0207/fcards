@@ -156,6 +156,48 @@ func TestSampler(t *testing.T) {
 					{Question: "q5", Cards: []card.Card{*cardNum(5)}},
 				},
 			},
+			{
+				name: "sample_inverse",
+				sampler: &Sampler{
+					sizeLimit: 10,
+					direc:     flags.Inverse,
+					random:    *rand.New(rand.NewSource(testRandomSeed)),
+				},
+				given: generateUniqueCards(10),
+				want: []*mcard.MultiCard{
+					{Question: "a2", Cards: []card.Card{*card.New("a2", "q2", "c2")}},
+					{Question: "a1", Cards: []card.Card{*card.New("a1", "q1", "c1")}},
+					{Question: "a7", Cards: []card.Card{*card.New("a7", "q7", "c7")}},
+					{Question: "a9", Cards: []card.Card{*card.New("a9", "q9", "c9")}},
+					{Question: "a3", Cards: []card.Card{*card.New("a3", "q3", "c3")}},
+					{Question: "a0", Cards: []card.Card{*card.New("a0", "q0", "c0")}},
+					{Question: "a6", Cards: []card.Card{*card.New("a6", "q6", "c6")}},
+					{Question: "a4", Cards: []card.Card{*card.New("a4", "q4", "c4")}},
+					{Question: "a8", Cards: []card.Card{*card.New("a8", "q8", "c8")}},
+					{Question: "a5", Cards: []card.Card{*card.New("a5", "q5", "c5")}},
+				},
+			},
+			{
+				name: "sample_random",
+				sampler: &Sampler{
+					sizeLimit: 10,
+					direc:     flags.Random,
+					random:    *rand.New(rand.NewSource(testRandomSeed)),
+				},
+				given: generateUniqueCards(10),
+				want: []*mcard.MultiCard{
+					{Question: "a8", Cards: []card.Card{*card.New("a8", "q8", "c8")}},
+					{Question: "q3", Cards: []card.Card{*cardNum(3)}},
+					{Question: "a3", Cards: []card.Card{*card.New("a3", "q3", "c3")}},
+					{Question: "q4", Cards: []card.Card{*cardNum(4)}},
+					{Question: "a2", Cards: []card.Card{*card.New("a2", "q2", "c2")}},
+					{Question: "a9", Cards: []card.Card{*card.New("a9", "q9", "c9")}},
+					{Question: "q6", Cards: []card.Card{*cardNum(6)}},
+					{Question: "q5", Cards: []card.Card{*cardNum(5)}},
+					{Question: "q1", Cards: []card.Card{*cardNum(1)}},
+					{Question: "q8", Cards: []card.Card{*cardNum(8)}},
+				},
+			},
 		} {
 			t.Run(tc.name, func(t *testing.T) {
 				got := tc.sampler.RandomSampleOfMultiCardsFrom(tc.given)
