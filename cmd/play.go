@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/iav0207/fcards/internal/check"
 	"github.com/iav0207/fcards/internal/data"
 	"github.com/iav0207/fcards/internal/flags"
 	"github.com/iav0207/fcards/internal/game"
@@ -33,13 +32,12 @@ func init() {
 }
 
 func runPlay(cmd *cobra.Command, args []string) {
-	check.Require(direc == flags.Random, "Only Random mode is supported at the moment")
 	paths := argsOrAllTsvPaths(args)
 	cards := data.ReadCardsFromPaths(paths)
 	out.Log.Println("Read", len(cards), "cards in total.")
 	exitIfEmpty(cards)
 
-	sample := game.RandomSampleOfMultiCardsFrom(cards)
+	sample := game.NewSampler(direc).RandomSampleOfMultiCardsFrom(cards)
 
 	out.Log.Println("Let's play!")
 	reiterate := playRound(sample)

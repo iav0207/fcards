@@ -2,6 +2,7 @@ package game
 
 import (
 	"math/rand"
+	"sort"
 	"time"
 
 	"github.com/iav0207/fcards/internal/check"
@@ -12,34 +13,41 @@ import (
 	"github.com/iav0207/fcards/internal/out"
 )
 
-type Sampler interface {
-	RandomSampleOfMultiCardsFrom(cards []card.Card) []*mcard.MultiCard
+type Sampler struct {
+	sizeLimit int
+	direc     flags.Direction
+	random    rand.Rand
 }
 
-type sampler struct {
-	sizeLimit  int
-	randomSeed int64
+func NewSampler(direc flags.Direction) *Sampler {
+	return &Sampler{
+		sizeLimit: config.Get().GameDeckSize,
+		direc:     direc,
+		random:    *rand.New(rand.NewSource(seed())),
+	}
 }
 
-var SamplerService = sampler{
-	sizeLimit:  config.Get().GameDeckSize,
-	randomSeed: time.Now().UnixNano(),
-}
+func seed() int64 { return time.Now().UnixNano() }
 
-func RandomSampleOfMultiCardsFrom(cards []card.Card) []*mcard.MultiCard {
-	return SamplerService.RandomSampleOfMultiCardsFrom(cards)
-}
-
-func (s sampler) RandomSampleOfMultiCardsFrom(cards []card.Card) []*mcard.MultiCard {
+func (s Sampler) RandomSampleOfMultiCardsFrom(cards []card.Card) []*mcard.MultiCard {
 	var mcDirect index = createIndex(cards)
 	var mcInverse index = createIndex(invert(cards))
 
 	var limit int = min(len(mcDirect), len(mcInverse), s.sizeLimit)
 
-	keysDirect := assignDirection(keysOf(mcDirect)[:limit], flags.Straight)
-	keysInverse := assignDirection(keysOf(mcInverse)[:limit], flags.Inverse)
+	keysDirect := assignDirection(sortedKeysOf(mcDirect), flags.Straight)
+	keysInverse := assignDirection(sortedKeysOf(mcInverse), flags.Inverse)
 
-	var keyPool []directedQuestion = append(keysDirect, keysInverse...)
+	var keyPool []directedQuestion
+	if s.direc == flags.Random {
+		keyPool = append(keyPool, keysDirect...)
+		keyPool = append(keyPool, keysInverse...)
+	} else if s.direc == flags.Straight {
+		keyPool = append(keyPool, keysDirect...)
+	} else if s.direc == flags.Inverse {
+		keyPool = append(keyPool, keysInverse...)
+	}
+
 	s.shuffleQuestions(keyPool)
 	keyPool = keyPool[:limit]
 	sample := make([]*mcard.MultiCard, 0, limit)
@@ -78,13 +86,14 @@ type directedQuestion struct {
 	direc    flags.Direction
 }
 
-func keysOf(idx index) []string {
+func sortedKeysOf(idx index) []string {
 	keys := make([]string, len(idx))
 	i := 0
 	for key := range idx {
 		keys[i] = key
 		i++
 	}
+	sort.Strings(keys)
 	return keys
 }
 
@@ -98,9 +107,8 @@ func assignDirection(questions []string, direc flags.Direction) []directedQuesti
 	return ret
 }
 
-func (s sampler) shuffleQuestions(questions []directedQuestion) {
-	rand.Seed(s.randomSeed)
-	rand.Shuffle(len(questions), func(i, j int) { questions[i], questions[j] = questions[j], questions[i] })
+func (s Sampler) shuffleQuestions(questions []directedQuestion) {
+	s.random.Shuffle(len(questions), func(i, j int) { questions[i], questions[j] = questions[j], questions[i] })
 }
 
 func min(items ...int) int {
